@@ -1,0 +1,80 @@
+﻿@using WebMud.Data
+@using WebMud.Models
+@inject IUsersService UsersService
+@attribute [Authorize(Roles = "Admin, User")]
+@inject AuthenticationStateProvider GetAuthenticationStateAsync
+ 
+
+<AuthorizeView Roles="Admin, User">
+    @{Guid uid = new Guid(context.User.Claims.First().Value);}
+    <MudCard Elevation="0" Square="true" Class="@Class" Style="@Style">
+        <MudCardHeader>
+            <CardHeaderAvatar>
+                @if (Users is null)
+                {
+                    <MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true" />
+                }
+                else
+                {
+                    @if (!String.IsNullOrEmpty(Users.AvatarPath))
+                    {
+                        <MudAvatar Image="@Users.AvatarPath" />
+                    }
+                    else
+                    {
+                        <MudAvatar Color="Color.Dark" Style="height:50px; width:50px;">@Users.FName.ToUpper().FirstOrDefault() @Users.SName.ToUpper().FirstOrDefault()</MudAvatar>
+                    }
+                }
+            </CardHeaderAvatar>
+            <CardHeaderContent>
+                <MudText Typo="Typo.body2">@Name(uid)</MudText>
+                <MudText Typo="Typo.caption">@Position(uid)</MudText>
+            </CardHeaderContent>
+        </MudCardHeader>
+    </MudCard>
+</AuthorizeView>
+@code {
+
+    //[Parameter]
+    //public string Id { get; set; }
+    [Parameter] public string Class { get; set; }
+    [Parameter] public string Style { get; set; }
+
+    private System.Security.Claims.ClaimsPrincipal Authuser { get; set; }
+    private Users Users { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authstate = await GetAuthenticationStateAsync.GetAuthenticationStateAsync();
+        Authuser = authstate.User;
+        var result = await UsersService.GetUsers(new Guid(authstate.User.Claims.First().Value));
+        Users = result;
+    }
+
+
+
+    private string Name(Guid id)
+    {
+        if (Users == null)
+            return "";
+        return Users.FName + " " + Users.SName;
+
+    }
+
+    private string Position(Guid id)
+    {
+        if (Users == null)
+            return "";
+        return Users.Position;
+
+    }
+
+    private string Image(Guid id)
+    {
+        if (Users == null)
+            return "";
+        return Users.AvatarPath;
+
+    }
+
+}

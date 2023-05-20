@@ -1,0 +1,155 @@
+﻿@page "/application/gallery"
+@inject NavigationManager navigationManager
+@inject AuthenticationStateProvider GetAuthenticationStateAsync
+@inject IGalleryService GalleryService
+@using WebMud.Data
+@using System.IO
+@inject IWebHostEnvironment Environment
+
+@attribute [Authorize(Roles = "Admin, User")]
+
+
+<MudTable Items="@_Gallery" Hover="true" Breakpoint="Breakpoint.Sm" Loading="@_loading" LoadingProgressColor="Color.Info" Filter="new Func<WebMud.Models.Gallery ,bool>(FilterFunc1)">
+    <ToolBarContent>
+        <MudButton Variant="Variant.Filled" StartIcon="@Icons.Outlined.Add" Link="/application/gallery/0" Color="Color.Tertiary">ADD</MudButton>
+        <MudButton Variant="Variant.Filled" Class="ml-3" StartIcon="@Icons.Outlined.Refresh" OnClick="(() => OnInitializedAsync())" Color="Color.Info">Refresh</MudButton>
+        <MudSpacer />
+        <MudTextField @bind-Value="searchString1" Variant="Variant.Text" DisableUnderLine="false" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0" Clearable="true"></MudTextField>
+    </ToolBarContent>
+    <HeaderContent>
+
+
+        <MudTh>STATUS:</MudTh>
+
+        <MudTh>DATE:</MudTh>
+
+        <MudTh>NOTE:</MudTh>
+
+        <MudTh>IMAGE:</MudTh>
+
+        <MudTh>ON WELCOME:</MudTh>
+
+        <MudTh>EDIT:</MudTh>
+
+        <MudTh>DELETE:</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+
+        <MudTd DataLabel="STATUS:">
+            <MudToggleIconButton Class="mt-3 " @bind-Toggled="@context.IsActive" @onclick="@(e=> OnActivationClick(context.Id, context.IsActive))"
+                                 Icon="@Icons.Filled.HideImage" Color="@Color.Error" Title="Off"
+                                 ToggledIcon="@Icons.Filled.Image" ToggledColor="@Color.Success" ToggledTitle="On" />
+
+        </MudTd>
+
+        <MudTd DataLabel="DATE">@context.CreatedDate</MudTd>
+
+        <MudTd DataLabel="NOTE">@context.Note</MudTd>
+
+        <MudTd DataLabel="IMAGE">
+            <MudImage Fluid="true" Style="max-height:200px; max-width:200px" Class="rounded-lg" Src="@context.Path"></MudImage>
+        </MudTd>
+
+        <MudTd DataLabel="ON WELCOME">@context.IsOnWelcome</MudTd>
+
+        <MudTd DataLabel="">
+            @{string res = "/application/gallery/" + @context.Id;}
+            <MudButton Variant="Variant.Outlined" Link="@res" EndIcon="@Icons.Outlined.Settings" Color="Color.Primary">Edit</MudButton>
+        </MudTd>
+
+        <MudTd DataLabel="">
+            <MudButton EndIcon="@Icons.Material.Filled.Delete" Variant="Variant.Outlined" Color="Color.Error" OnClick="@(e=> OnDelete(context.Id, context.Path))">Delete</MudButton>
+        </MudTd>
+    </RowTemplate>
+    <PagerContent>
+        <MudTablePager InfoFormat="@($"Center {infoFormat}")" HorizontalAlignment="HorizontalAlignment.Center" HidePageNumber="false" HidePagination="false" HideRowsPerPage="true" />
+    </PagerContent>
+</MudTable>
+
+@code
+{
+
+    [Inject] private IDialogService DialogService { get; set; }
+
+    private bool _loading;
+    private List<WebMud.Models.Gallery> _Gallery;
+    private System.Security.Claims.ClaimsPrincipal Authuser { get; set; }
+    private string searchString1 = "";
+    private string infoFormat = "{first_item}-{last_item} of {all_items}";
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authstate = await GetAuthenticationStateAsync.GetAuthenticationStateAsync();
+        Authuser = authstate.User;
+
+
+        if (Authuser.Identity.IsAuthenticated)
+        {
+
+            _Gallery = await GalleryService.GetGalleryAll();
+            StateHasChanged();
+
+        }
+    }
+
+    private async Task OnDelete(Guid id, string path)
+    {
+
+        bool? result = await DialogService.ShowMessageBox(
+    "Warning",
+    "Deleting can not be undone!",
+    yesText: "Delete!", cancelText: "Cancel");
+
+
+
+        if (result == true)
+        {
+
+            await GalleryService.DeleteGallery(id, path);
+
+            await OnInitializedAsync();
+            StateHasChanged();
+        }
+
+
+
+
+    }
+
+    private async Task OnActivationClick(Guid id, bool isnotice)
+    {
+        if (isnotice)
+        {
+            await GalleryService.ActivateGallery(id, false);
+        }
+        else
+        {
+            await GalleryService.ActivateGallery(id, true);
+
+        }
+
+
+        await OnInitializedAsync();
+        StateHasChanged();
+
+    }
+
+    private bool FilterFunc1(WebMud.Models.Gallery element) => FilterFunc(element, searchString1);
+
+    private bool FilterFunc(WebMud.Models.Gallery element, string searchString)
+    {
+
+
+        if (string.IsNullOrWhiteSpace(searchString))
+            return true;
+        if (element.InternalNote.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if ($"{element.InternalNote}".Contains(searchString))
+            return true;
+        return false;
+
+    }
+
+
+
+}

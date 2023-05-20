@@ -1,0 +1,93 @@
+{
+  "Files": [
+    {
+      "Id": "C:\\Users\\pracu\\.nuget\\packages\\blazor-analytics\\3.11.0\\contentFiles\\any\\netstandard2.0\\wwwroot\\blazor-analytics.js",
+      "PackagePath": "staticwebassets\\blazor-analytics.js"
+    },
+    {
+      "Id": "C:\\Users\\pracu\\source\\repos\\FASTWEB_NA_HRANI\\WebMud\\wwwroot\\Scroll.js",
+      "PackagePath": "staticwebassets\\Scroll.js"
+    },
+    {
+      "Id": "C:\\Users\\pracu\\source\\repos\\FASTWEB_NA_HRANI\\WebMud\\wwwroot\\ScrollTrigger.js",
+      "PackagePath": "staticwebassets\\ScrollTrigger.js"
+    },
+    {
+      "Id": "C:\\Users\\pracu\\source\\repos\\FASTWEB_NA_HRANI\\WebMud\\wwwroot\\Scrollonsection.js",
+      "PackagePath": "staticwebassets\\Scrollonsection.js"
+    },
+    {
+      "Id": "C:\\Users\\pracu\\source\\repos\\FASTWEB_NA_HRANI\\WebMud\\wwwroot\\StyleSheet.css",
+      "PackagePath": "staticwebassets\\StyleSheet.css"
+    },
+    {
+      "Id": "C:\\Users\\pracu\\source\\repos\\FASTWEB_NA_HRANI\\WebMud\\wwwroot\\avatars\\pic.jpg",
+      "PackagePath": "staticwebassets\\avatars\\pic.jpg"
+    },
+    {
+      "Id": "C:\\Users\\pracu\\source\\repos\\FASTWEB_NA_HRANI\\WebMud\\wwwroot\\favicon.ico",
+      "PackagePath": "staticwebassets\\favicon.ico"
+    },
+    {
+      "Id": "C:\\Users\\pracu\\source\\repos\\FASTWEB_NA_HRANI\\WebMud\\wwwroot\\images\\01e9b5b0-911b-4895-8f05-32edc57fdfc9.jpg",
+      "PackagePath": "staticwebassets\\images\\01e9b5b0-911b-4895-8f05-32edc57fdfc9.jpg"
+    },
+    {
+      "Id": "C:\\Users\\pracu\\source\\repos\\FASTWEB_NA_HRANI\\WebMud\\wwwroot\\images\\42a55a83-3eca-4874-bd8b-010baf0cb0a9.jpg",
+      "PackagePath": "staticwebassets\\images\\42a55a83-3eca-4874-bd8b-010baf0cb0a9.jpg"
+    },
+    {
+      "Id": "C:\\Users\\pracu\\source\\repos\\FASTWEB_NA_HRANI\\WebMud\\wwwroot\\images\\45e9abb3-f015-4eed-8e0c-22f38476555c.jpg",
+      "PackagePath": "staticwebassets\\images\\45e9abb3-f015-4eed-8e0c-22f38476555c.jpg"
+    },
+    {
+      "Id": "C:\\Users\\pracu\\source\\repos\\FASTWEB_NA_HRANI\\WebMud\\wwwroot\\images\\91ff1ae5-e7f9-40e4-897b-b5f85d38d8a1.jpg",
+      "PackagePath": "staticwebassets\\images\\91ff1ae5-e7f9-40e4-897b-b5f85d38d8a1.jpg"
+    },
+    {
+      "Id": "C:\\Users\\pracu\\source\\repos\\FASTWEB_NA_HRANI\\WebMud\\wwwroot\\images\\a19d9be2-190c-4ee0-bf4a-7b4755f64997.jpg",
+      "PackagePath": "staticwebassets\\images\\a19d9be2-190c-4ee0-bf4a-7b4755f64997.jpg"
+    },
+    {
+      "Id": "C:\\Users\\pracu\\source\\repos\\FASTWEB_NA_HRANI\\WebMud\\wwwroot\\images\\bd611e01-4986-4896-ad7f-83ecccea817d.jpg",
+      "PackagePath": "staticwebassets\\images\\bd611e01-4986-4896-ad7f-83ecccea817d.jpg"
+    },
+    {
+      "Id": "C:\\Users\\pracu\\source\\repos\\FASTWEB_NA_HRANI\\WebMud\\wwwroot\\images\\d1ef77ce-d5a0-4ccd-b034-f50717d5a8ea.jpg",
+      "PackagePath": "staticwebassets\\images\\d1ef77ce-d5a0-4ccd-b034-f50717d5a8ea.jpg"
+    },
+    {
+      "Id": "C:\\Users\\pracu\\source\\repos\\FASTWEB_NA_HRANI\\WebMud\\wwwroot\\images\\e955cf35-302b-467f-908f-00e52777560b.png",
+      "PackagePath": "staticwebassets\\images\\e955cf35-302b-467f-908f-00e52777560b.png"
+    },
+    {
+      "Id": "C:\\Users\\pracu\\source\\repos\\FASTWEB_NA_HRANI\\WebMud\\wwwroot\\images\\f5afef2e-0c26-4667-bdda-b0384a687f39.jpg",
+      "PackagePath": "staticwebassets\\images\\f5afef2e-0c26-4667-bdda-b0384a687f39.jpg"
+    },
+    {
+      "Id": "C:\\Users\\pracu\\source\\repos\\FASTWEB_NA_HRANI\\WebMud\\wwwroot\\resources\\0747a614-346a-4f09-a1f9-25210b96e7ba.jpg",
+      "PackagePath": "staticwebassets\\resources\\0747a614-346a-4f09-a1f9-25210b96e7ba.jpg"
+    },
+    {
+      "Id": "C:\\Users\\pracu\\source\\repos\\FASTWEB_NA_HRANI\\WebMud\\wwwroot\\resources\\defimg.jpg",
+      "PackagePath": "staticwebassets\\resources\\defimg.jpg"
+    },
+    {
+      "Id": "obj\\Debug\\net6.0\\staticwebassets\\msbuild.WebMud.Microsoft.AspNetCore.StaticWebAssets.props",
+      "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssets.props"
+    },
+    {
+      "Id": "obj\\Debug\\net6.0\\staticwebassets\\msbuild.build.WebMud.props",
+      "PackagePath": "build\\WebMud.props"
+    },
+    {
+      "Id": "obj\\Debug\\net6.0\\staticwebassets\\msbuild.buildMultiTargeting.WebMud.props",
+      "PackagePath": "buildMultiTargeting\\WebMud.props"
+    },
+    {
+      "Id": "obj\\Debug\\net6.0\\staticwebassets\\msbuild.buildTransitive.WebMud.props",
+      "PackagePath": "buildTransitive\\WebMud.props"
+    }
+  ],
+  "ElementsToRemove": []
+}

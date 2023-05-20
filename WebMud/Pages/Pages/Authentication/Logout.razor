@@ -1,0 +1,31 @@
+﻿@page "/pages/authentication/logout"
+@inject NavigationManager NavigationManager;
+@layout LoginLayout
+@using System.Threading;
+@using Microsoft.AspNetCore.Identity
+
+
+<h2>Logout Succesful...</h2>
+<br />
+<AuthorizeView>
+    <h3>Bye @(context.User.Identity.Name)</h3>
+</AuthorizeView>
+<br />
+<h3 Class="mt-5">Homescreen is <MudLink Href="/">here...</MudLink></h3>
+
+@code {
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var timer = new Timer(new TimerCallback(_ =>
+            {
+                NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
+            }), null, 1500, 1500);
+        }
+    }
+
+
+
+}

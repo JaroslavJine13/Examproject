@@ -1,0 +1,336 @@
+﻿@inherits LayoutComponentBase
+@attribute [AllowAnonymous]
+@inject NavigationManager Navigation
+
+@inject IJSRuntime JS
+@inject NavigationManager UriHelper
+@inject IUsersService UsersService
+@inject IDialogService DialogService
+@inject WebMud.Data.IChatService ChatService
+@inject IJSRuntime jsRuntime
+@using Microsoft.AspNetCore.SignalR.Client;
+@using Microsoft.AspNetCore.SignalR;
+@using WebMud.Pages.Applications.Chat
+@using WebMud.Public.PublicShared
+@using WebMud.Public.Content
+@using WebMud.Data
+@using WebMud.Models
+
+<MudLayout>
+    <MudThemeProvider @bind-IsDarkMode="@DarkOn" Theme="_theme" />
+    <MudDialogProvider />
+    <MudSnackbarProvider />
+
+
+    <MudScrollToTop>
+        <MudFab Color="Color.Primary"  Icon="@Icons.Filled.ArrowCircleUp" />
+    </MudScrollToTop>
+
+
+    <MudAppBar Elevation="0" id="appbar" Dense="true">
+        <MudChip Variant="Variant.Filled" Href="/" Color="Color.Default" Icon="@Icons.Outlined.Home">@AdminSettings.Name</MudChip>
+
+        <MudSpacer></MudSpacer>
+        @if (!string.IsNullOrEmpty(AdminSettings.Facebook))
+        {
+
+            <MudIconButton OnClick="(() => NavigateToNewTab(AdminSettings.Facebook))" Icon="@Icons.Custom.Brands.Facebook" Color="Color.Info" Size="Size.Medium"></MudIconButton>
+
+        }
+        @if (!string.IsNullOrEmpty(AdminSettings.Linkedin))
+        {
+
+            <MudIconButton OnClick="(() => NavigateToNewTab(AdminSettings.Linkedin))" Icon="@Icons.Custom.Brands.LinkedIn" Color="Color.Info" Size="Size.Medium"></MudIconButton>
+
+        }
+        @if (!string.IsNullOrEmpty(AdminSettings.Instagram))
+        {
+
+            <MudIconButton OnClick="(() => NavigateToNewTab(AdminSettings.Instagram))" Icon="@Icons.Custom.Brands.Instagram" Color="Color.Error" Size="Size.Medium"></MudIconButton>
+
+        }
+
+        @if (AdminSettings.IsGalleryPublished)
+        {
+            <MudIconButton Href="/photos" Class="card" Icon="@Icons.Outlined.ImageSearch" Color="Color.Default" Size="Size.Medium"></MudIconButton>
+
+        }
+
+        <MudIconButton Color="@Color.Default" Class="card" Size="Size.Medium" OnClick="LoginButtonClick" Icon="@Icons.Filled.Login"></MudIconButton>
+    </MudAppBar>
+
+    <div>
+        <MudHidden Breakpoint="Breakpoint.SmAndDown" Invert="true">
+            <svg id="wave" style="transform:rotate(180deg); transition: 0.3s" viewBox="0 0 1440 490" version="1.1" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="sw-gradient-0" x1="0" x2="0" y1="1" y2="0"><stop stop-color="rgba(62, 109, 243, 1)" offset="0%"></stop><stop stop-color="rgba(204.716, 11, 255, 1)" offset="100%"></stop></linearGradient></defs><path style="transform:translate(0, 0px); opacity:1" fill="url(#sw-gradient-0)" d="M0,147L48,171.5C96,196,192,245,288,228.7C384,212,480,131,576,89.8C672,49,768,49,864,57.2C960,65,1056,82,1152,73.5C1248,65,1344,33,1440,81.7C1536,131,1632,261,1728,261.3C1824,261,1920,131,2016,130.7C2112,131,2208,261,2304,277.7C2400,294,2496,196,2592,147C2688,98,2784,98,2880,81.7C2976,65,3072,33,3168,32.7C3264,33,3360,65,3456,98C3552,131,3648,163,3744,212.3C3840,261,3936,327,4032,310.3C4128,294,4224,196,4320,130.7C4416,65,4512,33,4608,40.8C4704,49,4800,98,4896,114.3C4992,131,5088,114,5184,163.3C5280,212,5376,327,5472,343C5568,359,5664,278,5760,269.5C5856,261,5952,327,6048,343C6144,359,6240,327,6336,334.8C6432,343,6528,392,6624,359.3C6720,327,6816,212,6864,155.2L6912,98L6912,490L6864,490C6816,490,6720,490,6624,490C6528,490,6432,490,6336,490C6240,490,6144,490,6048,490C5952,490,5856,490,5760,490C5664,490,5568,490,5472,490C5376,490,5280,490,5184,490C5088,490,4992,490,4896,490C4800,490,4704,490,4608,490C4512,490,4416,490,4320,490C4224,490,4128,490,4032,490C3936,490,3840,490,3744,490C3648,490,3552,490,3456,490C3360,490,3264,490,3168,490C3072,490,2976,490,2880,490C2784,490,2688,490,2592,490C2496,490,2400,490,2304,490C2208,490,2112,490,2016,490C1920,490,1824,490,1728,490C1632,490,1536,490,1440,490C1344,490,1248,490,1152,490C1056,490,960,490,864,490C768,490,672,490,576,490C480,490,384,490,288,490C192,490,96,490,48,490L0,490Z"></path><defs><linearGradient id="sw-gradient-1" x1="0" x2="0" y1="1" y2="0"><stop stop-color="rgba(41.18, 96.703, 255, 1)" offset="0%"></stop><stop stop-color="rgba(229.513, 11, 255, 1)" offset="100%"></stop></linearGradient></defs><path style="transform:translate(0, 50px); opacity:0.9" fill="url(#sw-gradient-1)" d="M0,196L48,220.5C96,245,192,294,288,334.8C384,376,480,408,576,408.3C672,408,768,376,864,343C960,310,1056,278,1152,220.5C1248,163,1344,82,1440,89.8C1536,98,1632,196,1728,261.3C1824,327,1920,359,2016,334.8C2112,310,2208,229,2304,187.8C2400,147,2496,147,2592,122.5C2688,98,2784,49,2880,57.2C2976,65,3072,131,3168,138.8C3264,147,3360,98,3456,114.3C3552,131,3648,212,3744,212.3C3840,212,3936,131,4032,122.5C4128,114,4224,180,4320,204.2C4416,229,4512,212,4608,171.5C4704,131,4800,65,4896,98C4992,131,5088,261,5184,334.8C5280,408,5376,425,5472,359.3C5568,294,5664,147,5760,106.2C5856,65,5952,131,6048,138.8C6144,147,6240,98,6336,114.3C6432,131,6528,212,6624,220.5C6720,229,6816,163,6864,130.7L6912,98L6912,490L6864,490C6816,490,6720,490,6624,490C6528,490,6432,490,6336,490C6240,490,6144,490,6048,490C5952,490,5856,490,5760,490C5664,490,5568,490,5472,490C5376,490,5280,490,5184,490C5088,490,4992,490,4896,490C4800,490,4704,490,4608,490C4512,490,4416,490,4320,490C4224,490,4128,490,4032,490C3936,490,3840,490,3744,490C3648,490,3552,490,3456,490C3360,490,3264,490,3168,490C3072,490,2976,490,2880,490C2784,490,2688,490,2592,490C2496,490,2400,490,2304,490C2208,490,2112,490,2016,490C1920,490,1824,490,1728,490C1632,490,1536,490,1440,490C1344,490,1248,490,1152,490C1056,490,960,490,864,490C768,490,672,490,576,490C480,490,384,490,288,490C192,490,96,490,48,490L0,490Z"></path></svg>        
+        </MudHidden>
+        <MudHidden Breakpoint="Breakpoint.SmAndDown" >
+            <svg id="wave" style="transform:rotate(180deg); transition: 0.3s" viewBox="0 0 1440 290" version="1.1" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="sw-gradient-0" x1="0" x2="0" y1="1" y2="0"><stop stop-color="rgba(62, 109, 243, 1)" offset="0%"></stop><stop stop-color="rgba(204.716, 11, 255, 1)" offset="100%"></stop></linearGradient></defs><path style="transform:translate(0, 0px); opacity:1" fill="url(#sw-gradient-0)" d="M0,232L48,198.2C96,164,192,97,288,87C384,77,480,126,576,154.7C672,184,768,193,864,193.3C960,193,1056,184,1152,154.7C1248,126,1344,77,1440,53.2C1536,29,1632,29,1728,38.7C1824,48,1920,68,2016,101.5C2112,135,2208,184,2304,183.7C2400,184,2496,135,2592,111.2C2688,87,2784,87,2880,111.2C2976,135,3072,184,3168,207.8C3264,232,3360,232,3456,222.3C3552,213,3648,193,3744,193.3C3840,193,3936,213,4032,212.7C4128,213,4224,193,4320,193.3C4416,193,4512,213,4608,217.5C4704,222,4800,213,4896,217.5C4992,222,5088,242,5184,227.2C5280,213,5376,164,5472,164.3C5568,164,5664,213,5760,232C5856,251,5952,242,6048,203C6144,164,6240,97,6336,62.8C6432,29,6528,29,6624,29C6720,29,6816,29,6864,29L6912,29L6912,290L6864,290C6816,290,6720,290,6624,290C6528,290,6432,290,6336,290C6240,290,6144,290,6048,290C5952,290,5856,290,5760,290C5664,290,5568,290,5472,290C5376,290,5280,290,5184,290C5088,290,4992,290,4896,290C4800,290,4704,290,4608,290C4512,290,4416,290,4320,290C4224,290,4128,290,4032,290C3936,290,3840,290,3744,290C3648,290,3552,290,3456,290C3360,290,3264,290,3168,290C3072,290,2976,290,2880,290C2784,290,2688,290,2592,290C2496,290,2400,290,2304,290C2208,290,2112,290,2016,290C1920,290,1824,290,1728,290C1632,290,1536,290,1440,290C1344,290,1248,290,1152,290C1056,290,960,290,864,290C768,290,672,290,576,290C480,290,384,290,288,290C192,290,96,290,48,290L0,290Z"></path><defs><linearGradient id="sw-gradient-1" x1="0" x2="0" y1="1" y2="0"><stop stop-color="rgba(41.18, 96.703, 255, 1)" offset="0%"></stop><stop stop-color="rgba(229.513, 11, 255, 1)" offset="100%"></stop></linearGradient></defs><path style="transform:translate(0, 50px); opacity:0.9" fill="url(#sw-gradient-1)" d="M0,232L48,207.8C96,184,192,135,288,140.2C384,145,480,203,576,198.2C672,193,768,126,864,96.7C960,68,1056,77,1152,96.7C1248,116,1344,145,1440,164.3C1536,184,1632,193,1728,178.8C1824,164,1920,126,2016,125.7C2112,126,2208,164,2304,169.2C2400,174,2496,145,2592,120.8C2688,97,2784,77,2880,87C2976,97,3072,135,3168,145C3264,155,3360,135,3456,145C3552,155,3648,193,3744,174C3840,155,3936,77,4032,62.8C4128,48,4224,97,4320,135.3C4416,174,4512,203,4608,222.3C4704,242,4800,251,4896,256.2C4992,261,5088,261,5184,222.3C5280,184,5376,106,5472,87C5568,68,5664,106,5760,145C5856,184,5952,222,6048,222.3C6144,222,6240,184,6336,174C6432,164,6528,184,6624,159.5C6720,135,6816,68,6864,33.8L6912,0L6912,290L6864,290C6816,290,6720,290,6624,290C6528,290,6432,290,6336,290C6240,290,6144,290,6048,290C5952,290,5856,290,5760,290C5664,290,5568,290,5472,290C5376,290,5280,290,5184,290C5088,290,4992,290,4896,290C4800,290,4704,290,4608,290C4512,290,4416,290,4320,290C4224,290,4128,290,4032,290C3936,290,3840,290,3744,290C3648,290,3552,290,3456,290C3360,290,3264,290,3168,290C3072,290,2976,290,2880,290C2784,290,2688,290,2592,290C2496,290,2400,290,2304,290C2208,290,2112,290,2016,290C1920,290,1824,290,1728,290C1632,290,1536,290,1440,290C1344,290,1248,290,1152,290C1056,290,960,290,864,290C768,290,672,290,576,290C480,290,384,290,288,290C192,290,96,290,48,290L0,290Z"></path></svg>
+
+        </MudHidden>
+
+
+
+        @Body
+
+        <svg id="wave" style="transform:rotate(0deg); margin-bottom: -4px; transition: 0.3s" viewBox="0 0 1440 290" version="1.1" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="sw-gradient-0" x1="0" x2="0" y1="1" y2="0"><stop stop-color="rgba(62, 109, 243, 1)" offset="0%"></stop><stop stop-color="rgba(204.716, 11, 255, 1)" offset="100%"></stop></linearGradient></defs><path style="transform:translate(0, 0px); opacity:1" fill="url(#sw-gradient-0)" d="M0,232L60,198.2C120,164,240,97,360,87C480,77,600,126,720,154.7C840,184,960,193,1080,193.3C1200,193,1320,184,1440,154.7C1560,126,1680,77,1800,53.2C1920,29,2040,29,2160,38.7C2280,48,2400,68,2520,101.5C2640,135,2760,184,2880,183.7C3000,184,3120,135,3240,111.2C3360,87,3480,87,3600,111.2C3720,135,3840,184,3960,207.8C4080,232,4200,232,4320,222.3C4440,213,4560,193,4680,193.3C4800,193,4920,213,5040,212.7C5160,213,5280,193,5400,193.3C5520,193,5640,213,5760,217.5C5880,222,6000,213,6120,217.5C6240,222,6360,242,6480,227.2C6600,213,6720,164,6840,164.3C6960,164,7080,213,7200,232C7320,251,7440,242,7560,203C7680,164,7800,97,7920,62.8C8040,29,8160,29,8280,29C8400,29,8520,29,8580,29L8640,29L8640,290L8580,290C8520,290,8400,290,8280,290C8160,290,8040,290,7920,290C7800,290,7680,290,7560,290C7440,290,7320,290,7200,290C7080,290,6960,290,6840,290C6720,290,6600,290,6480,290C6360,290,6240,290,6120,290C6000,290,5880,290,5760,290C5640,290,5520,290,5400,290C5280,290,5160,290,5040,290C4920,290,4800,290,4680,290C4560,290,4440,290,4320,290C4200,290,4080,290,3960,290C3840,290,3720,290,3600,290C3480,290,3360,290,3240,290C3120,290,3000,290,2880,290C2760,290,2640,290,2520,290C2400,290,2280,290,2160,290C2040,290,1920,290,1800,290C1680,290,1560,290,1440,290C1320,290,1200,290,1080,290C960,290,840,290,720,290C600,290,480,290,360,290C240,290,120,290,60,290L0,290Z"></path><defs><linearGradient id="sw-gradient-1" x1="0" x2="0" y1="1" y2="0"><stop stop-color="rgba(41.18, 96.703, 255, 1)" offset="0%"></stop><stop stop-color="rgba(229.513, 11, 255, 1)" offset="100%"></stop></linearGradient></defs><path style="transform:translate(0, 50px); opacity:0.9" fill="url(#sw-gradient-1)" d="M0,232L60,207.8C120,184,240,135,360,140.2C480,145,600,203,720,198.2C840,193,960,126,1080,96.7C1200,68,1320,77,1440,96.7C1560,116,1680,145,1800,164.3C1920,184,2040,193,2160,178.8C2280,164,2400,126,2520,125.7C2640,126,2760,164,2880,169.2C3000,174,3120,145,3240,120.8C3360,97,3480,77,3600,87C3720,97,3840,135,3960,145C4080,155,4200,135,4320,145C4440,155,4560,193,4680,174C4800,155,4920,77,5040,62.8C5160,48,5280,97,5400,135.3C5520,174,5640,203,5760,222.3C5880,242,6000,251,6120,256.2C6240,261,6360,261,6480,222.3C6600,184,6720,106,6840,87C6960,68,7080,106,7200,145C7320,184,7440,222,7560,222.3C7680,222,7800,184,7920,174C8040,164,8160,184,8280,159.5C8400,135,8520,68,8580,33.8L8640,0L8640,290L8580,290C8520,290,8400,290,8280,290C8160,290,8040,290,7920,290C7800,290,7680,290,7560,290C7440,290,7320,290,7200,290C7080,290,6960,290,6840,290C6720,290,6600,290,6480,290C6360,290,6240,290,6120,290C6000,290,5880,290,5760,290C5640,290,5520,290,5400,290C5280,290,5160,290,5040,290C4920,290,4800,290,4680,290C4560,290,4440,290,4320,290C4200,290,4080,290,3960,290C3840,290,3720,290,3600,290C3480,290,3360,290,3240,290C3120,290,3000,290,2880,290C2760,290,2640,290,2520,290C2400,290,2280,290,2160,290C2040,290,1920,290,1800,290C1680,290,1560,290,1440,290C1320,290,1200,290,1080,290C960,290,840,290,720,290C600,290,480,290,360,290C240,290,120,290,60,290L0,290Z"></path></svg>
+
+        @if (_Users != null)
+        {
+            if (_Users.Where(s => s.IsChatAvailable == true).Count() > 0)
+            {
+
+                <MudPopover Open="@_Isnotify" Fixed="true" Class=" px-3b pt-3" id="footerChatNotify" Style="background-color:dodgerblue">
+                    <div class="d-flex">
+                        <MudIconButton OnClick="@NotifyOpen" Size="Size.Small" Class=" mb-2" Color="Color.Error" Icon="@Icons.Outlined.Close"></MudIconButton>
+                        <div class="d-flex  gap-1">
+                            <MudText Typo="Typo.body1" Style="color:azure" Class="mud-text-secondary">Dobrý den, potřebujete radu?</MudText>
+                            <MudIcon Icon="@Icons.Outlined.Message" Style="color:azure" Size="Size.Small" Class="mr-2 mt-1"></MudIcon>
+                        </div>
+                    </div>
+                </MudPopover>
+                <MudBadge id="footerChatBadge" Color="Color.Error" Overlap="true" Bordered="true" Dot="false" Class="mx-6 my-4">
+                    <MudFab id="footerChat" Color="Color.Secondary" StartIcon="@Icons.Material.Outlined.Chat" OnClick="@ToggleOpen" />
+                </MudBadge>
+                <MudPopover id="footerChatMsg" Open="@_isOpen" Fixed="true" Class="px-4 pt-4">
+                    <MudText Typo="Typo.body1">Potřebujete pomoci?</MudText>
+                    <MudText Typo="Typo.caption" Color="Color.Default">Vyberte si asistenta:</MudText>
+                    <MudList Clickable="true">
+                        <br />
+                        @foreach (var user in _Users)
+                        {
+                            if (user.IsChatAvailable)
+                            {
+                                <MudListItem Class="pa-0 px-2" OnClick="(() => OpenDialog(user.Id))">
+                                    <div class="d-flex flex-row mt-n1 mb-n1">
+                                        <div class="mr-4">
+
+
+
+                                            @if (!String.IsNullOrEmpty(user.AvatarPath))
+                                            {
+                                                <MudAvatar Image="@user.AvatarPath" Style="height:50px; width:50px;" />
+                                            }
+                                            else
+                                            {
+                                                <MudAvatar Color="Color.Dark" Style="height:50px; width:50px;">
+                                                    @user.FName.ToUpper().FirstOrDefault()@user.SName.ToUpper().FirstOrDefault()
+                                                </MudAvatar>
+                                            }
+
+
+
+
+                                        </div>
+                                        <div>
+
+                                            <MudText Typo="Typo.body2" Class="mt-3 mb-n2">@(@user.FName + " " + user.SName.ToUpper().FirstOrDefault())</MudText>
+                                            <MudText Typo="Typo.caption" Style="font-size: xx-small!important;">@user.Position </MudText>
+                                        </div>
+                                        <MudSpacer></MudSpacer>
+
+                                    </div>
+                                </MudListItem>
+                            }
+
+                        }
+
+                    </MudList>
+
+
+                    <MudButton OnClick="@ToggleOpen" Class="ml-auto mr-n3 mb-1" Color="Color.Error">Close</MudButton>
+
+                </MudPopover>
+            }
+        }
+
+        <MudPopover id="footerChatMsgRoom" Open="@_isRoomOpen" Fixed="true" Class="px-4 pt-4" MaxHeight="750" Style="max-width:425px">
+
+            <ChatWindow ResFrom="@_ResFrom" ResTo="@_ResTo"></ChatWindow>
+            <MudButton OnClick="@ToggleRoomOpen" Class="ml-auto mr-n3 mb-1" Color="Color.Error">Close</MudButton>
+        </MudPopover>
+
+
+
+
+
+    </div>
+
+
+
+
+</MudLayout>
+@code{
+
+
+
+    public bool DarkOn { get; set; }
+    private MudBlazorAdminDashboard _theme = new();
+
+    public bool _drawerOpen = false;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        DarkOn = AdminSettings.IsPublicDefaultDark;
+
+        _Users = await UsersService.GetUsers();
+
+    }
+
+    protected override void OnParametersSet()
+    {
+
+
+
+
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+
+
+            await DelayNotify();
+        }
+
+    }
+
+    private async Task DelayNotify()
+    {
+
+        await Task.Delay(3000);
+        NotifyOpen();
+        StateHasChanged();
+    }
+
+    bool open;
+    Anchor anchor;
+
+    void OpenDrawer(Anchor anchor)
+    {
+        open = true;
+        this.anchor = anchor;
+    }
+
+
+    void DrawerToggle()
+    {
+        _drawerOpen = !_drawerOpen;
+    }
+
+    private void LoginButtonClick()
+    {
+        Navigation.NavigateTo("/pages/authentication/login");
+
+    }
+
+
+
+    void ToggleDrawer()
+    {
+        _drawerOpen = !_drawerOpen;
+    }
+
+    public async Task NavigateToNewTab(string url)
+    {
+
+        await JS.InvokeAsync<object>("open", url, "_blank");
+    }
+
+
+    //------chat---------------------
+    private List<Users> _Users;
+    public bool _isOpen;
+    public bool _isRoomOpen;
+    public bool _Isnotify;
+    //
+
+    // flag to indicate chat status
+    private bool _isChatting = true;
+
+    // name of the user who will be chatting
+    private string _username;
+    private string _idname { get; set; }
+
+    private string _targetusername;
+
+    // on-screen message
+    private string _message;
+
+    // new message input
+    private string? _newMessage { get; set; }
+
+    // list of messages in chat
+    public List<Message> _messages = new List<Message>();
+
+    private string _hubUrl;
+    private HubConnection _hubConnection;
+
+
+
+    private Users users { get; set; }
+    private Users targetuser { get; set; }
+
+
+    public void NotifyOpen()
+    {
+
+        if (_Isnotify)
+            _Isnotify = false;
+        else
+            _Isnotify = true;
+    }
+
+    public void ToggleOpen()
+    {
+        _Isnotify = false;
+        if (_isOpen)
+            _isOpen = false;
+        else
+            _isOpen = true;
+    }
+
+    public void ToggleRoomOpen()
+    {
+
+        StateHasChanged();
+        if (_isRoomOpen)
+            _isRoomOpen = false;
+        else
+            _isRoomOpen = true;
+    }
+
+    private string _ResFrom { get; set; }
+    private Guid _ResTo { get; set; }
+    private async Task OpenDialog(Guid id)
+    {
+
+        var options = new DialogOptions { CloseOnEscapeKey = true };
+        _idname = Guid.NewGuid().ToString();
+        var parameters = new DialogParameters { ["Username"] = _idname };
+
+        var dialog = DialogService.Show<ChatDialog>("O Vás...", parameters);
+        var result = await dialog.Result;
+
+        if (!result.Cancelled)
+        {
+            _isOpen = false;
+
+            _ResFrom = result.Data.ToString();
+            _ResTo = id;
+
+
+
+
+            ToggleRoomOpen();
+
+            StateHasChanged();
+
+        }
+
+
+    }
+
+}

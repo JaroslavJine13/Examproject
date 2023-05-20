@@ -1,0 +1,251 @@
+﻿@page "/application/Client/{Id}"
+@inject IClientService InterestService
+@inject NavigationManager Navigation
+@inject IJSRuntime JSRuntime
+@using WebMud.Models
+@using WebMud.Data
+@using System.IO
+@inject IWebHostEnvironment Environment
+@inject IInsuranceService InsuranceService
+@attribute [Authorize(Roles = "Admin, User")]
+
+@if (_Interest is null)
+{
+    <MudItem xs="12" sm="7">
+        <MudProgressCircular Color="Color.Primary" Style="height:70px;width:70px;" Indeterminate="true" />
+    </MudItem>
+}
+else
+{
+
+    <EditForm Model="@_Interest" OnValidSubmit="OnValidSubmit" OnInvalidSubmit="OnInvalidSubmit">
+        <DataAnnotationsValidator />
+        <MudGrid>
+
+            <MudItem xs="12" sm="7">
+
+                <MudPaper Class="pa-2">
+                    @*          <MudButton Class="ml-n1" Variant="Variant.Filled" Color="Color.Primary" DisableElevation="true" OnClick="@Back">Back</MudButton>*@
+                    <MudIconButton Icon="@Icons.Filled.ArrowBackIosNew" Color="Color.Secondary" OnClick="@Back"></MudIconButton>
+                </MudPaper>
+                <MudCard>
+                    <MudCardContent>
+                        @*<MudTextField Label="Id" Disabled="true" @bind-Value="_JobOffers.Id" For="@(() => _JobOffers.Id)" />*@
+
+                        <MudDatePicker Label="Date" Editable="true" @bind-Date="_Interest.CreatedDate" Variant="Variant.Outlined" HelperText="Select Date" HelperTextOnFocus="true" Required="true" Disabled="true" />
+
+                        <MudTextField Label="Name" HelperText="Client name. Max. 255 characters" MaxLength="255" @bind-Value="_Interest.Name" For="@(() => _Interest.Name)" Required="true" HelperTextOnFocus="true" Variant="Variant.Outlined" />
+
+                        <MudTextField Label="Surname" HelperText="Client surname. Max. 255 characters" MaxLength="255" @bind-Value="_Interest.Surname" For="@(() => _Interest.Surname)" Required="true" HelperTextOnFocus="true" Variant="Variant.Outlined" />
+
+                        <MudTextField Label="Email" HelperText="Client email. Max. 255 characters" MaxLength="255" @bind-Value="_Interest.Email" For="@(() => _Interest.Email)" Required="true" HelperTextOnFocus="true" Variant="Variant.Outlined" />
+
+                        <MudTextField Label="Adress" HelperText="Client adress. Max. 1000 characters" MaxLength="1000" @bind-Value="_Interest.Adress" For="@(() => _Interest.Adress)" Required="true" HelperTextOnFocus="true" Variant="Variant.Outlined" />
+
+                        <MudTextField Label="Phone" HelperText="Client phone. Max. 255 characters" MaxLength="255" @bind-Value="_Interest.Phone" For="@(() => _Interest.Phone)" Required="true" HelperTextOnFocus="true" Variant="Variant.Outlined" />
+
+                        <MudTextField Label="City" HelperText="Client city. Max. 255 characters" MaxLength="255" @bind-Value="_Interest.City" For="@(() => _Interest.City)" Required="true" HelperTextOnFocus="true" Variant="Variant.Outlined" />
+
+                        <MudTextField Label="PSC" HelperText="Client PSC. Max. 255 characters" MaxLength="255" @bind-Value="_Interest.PSC" For="@(() => _Interest.PSC)" Required="true" HelperTextOnFocus="true" Variant="Variant.Outlined" />
+
+                        <MudTextField Label="Internal note" HelperText="Internal note. Max. 1000 characters" MaxLength="1000" @bind-Value="_Interest.InternalNote" For="@(() => _Interest.InternalNote)" Required="false" HelperTextOnFocus="true" Variant="Variant.Outlined" Lines="7" />
+
+                        <MudCheckBox T="bool" Class="ml-n2" Label="Is Active" Color="Color.Primary" @bind-Checked="_Interest.IsActive" For="@(() => _Interest.IsActive)" />
+
+                        <div class="d-flex gap-1">
+
+
+                            @if (_Insurance != null)
+                            {
+                                @foreach (var item in _Insurance)
+                                {
+                                    if (item.TypeEnum == Models.Type.Car)
+                                    {
+                                        <MudChip Color="Color.Primary" Href="@("/application/insurance/" + item.Id)" Icon="@Icons.Rounded.CarCrash"> @item.Subject</MudChip>
+                                    }
+                                    if (item.TypeEnum == Models.Type.House)
+                                    {
+                                        <MudChip Color="Color.Secondary" Href="@("/application/insurance/" + item.Id)" Icon="@Icons.Rounded.House"> @item.Subject</MudChip>
+                                    }
+                                    if (item.TypeEnum == Models.Type.life)
+                                    {
+                                        <MudChip Color="Color.Tertiary" Href="@("/application/insurance/" + item.Id)" Icon="@Icons.Rounded.Living"> @item.Subject</MudChip>
+                                    }
+                                    if (item.TypeEnum == Models.Type.Liability)
+                                    {
+                                        <MudChip Color="Color.Error" Href="@("/application/insurance/" + item.Id)" Icon="@Icons.Rounded.MoneyOff"> @item.Subject</MudChip>
+                                    }
+
+                                }
+
+
+                            }
+                        </div>
+                    </MudCardContent>
+                    <MudCardActions>
+
+
+                        <MudButton Disabled="_processing" ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto">
+                            @if (_processing)
+                            {
+                                <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                                <MudText Class="ms-2">Working</MudText>
+                            }
+                            else
+                            {
+                                <MudText>Confirm</MudText>
+                            }
+                        </MudButton>
+                    </MudCardActions>
+                </MudCard>
+            </MudItem>
+            <MudItem xs="12" sm="5">
+                <MudPaper Class="pa-4 mud-height-full">
+                    <MudText Typo="Typo.subtitle2">Validation Summary</MudText>
+                    @if (success)
+                    {
+                        <MudText Color="Color.Success">Success</MudText>
+                    }
+                    else
+                    {
+                        <MudText Color="@Color.Error">
+                            <ValidationSummary />
+                        </MudText>
+                    }
+                </MudPaper>
+            </MudItem>
+            <MudItem xs="12">
+                <MudText Typo="Typo.body2" Align="Align.Center">
+                    Fill out the form correctly to see the success message.
+                </MudText>
+            </MudItem>
+        </MudGrid>
+    </EditForm>
+
+
+
+}
+
+
+<style>
+
+
+    .ql-toolbar .ql-stroke {
+        fill: none;
+        stroke: #A1A1A1;
+    }
+
+    .ql-toolbar .ql-fill {
+        fill: #A1A1A1;
+        stroke: none;
+    }
+
+    .ql-toolbar .ql-picker {
+        color: #A1A1A1;
+    }
+</style>
+@code
+{
+    [Parameter]
+    public string Id { get; set; }
+
+    private Client _Interest { get; set; }
+    private List<WebMud.Models.Insurance>? _Insurance { get; set; }
+
+
+    bool success = false;
+    private bool _processing = false;
+    private bool _Disabled = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        bool isValid = Guid.TryParse(Id, out Guid result);
+
+
+        if (!string.IsNullOrEmpty(Id) & Id == "0")
+        {
+            _Interest = new Client();
+            _Insurance = new List<Insurance>();
+            _Disabled = true;
+            _Interest.CreatedDate = DateTime.Now;
+        }
+        else
+        {
+            if (!isValid)
+            {
+
+                Navigation.NavigateTo("/application/Client");
+
+            }
+            else
+            {
+
+                _Interest = await InterestService.GetClient(Guid.Parse(Id));
+                _Insurance = await InsuranceService.GetInsuranceOnlyActiveAll(Guid.Parse(Id));
+
+            }
+
+
+        }
+
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+
+    }
+
+    private async Task OnValidSubmit()
+    {
+
+        _processing = true;
+        await Task.Delay(1);
+
+
+        if (_Interest.Id == Guid.Empty)
+        {
+            var id = Guid.NewGuid();
+            _Interest.Id = id;
+
+
+            await InterestService.AddClient(_Interest);
+
+            success = true;
+
+        }
+        else
+        {
+
+
+            await InterestService.UpdateClient(_Interest);
+
+            success = true;
+
+        }
+
+        _processing = false;
+
+        StateHasChanged();
+    }
+
+    private void OnInvalidSubmit()
+    {
+
+        success = false;
+    }
+
+    private void Back()
+    {
+
+        Navigation.NavigateTo("/application/Client");
+
+    }
+
+
+
+
+
+}
+
+
+

@@ -1,0 +1,383 @@
+﻿@page "/application/folder/{Id}"
+@inject IFolderService InterestService
+@inject NavigationManager Navigation
+@inject IJSRuntime JSRuntime
+@using WebMud.Models
+@using WebMud.Data
+@using System.IO
+@inject IWebHostEnvironment Environment
+@inject IGalleryService GalleryService
+@attribute [Authorize(Roles = "Admin, User")]
+
+@if (_Interest is null)
+{
+    <MudItem xs="12" sm="7">
+        <MudProgressCircular Color="Color.Primary" Style="height:70px;width:70px;" Indeterminate="true" />
+    </MudItem>
+}
+else
+{
+
+
+    <EditForm Model="@_Interest" OnValidSubmit="OnValidSubmit" OnInvalidSubmit="OnInvalidSubmit">
+        <DataAnnotationsValidator />
+        <MudGrid>
+
+            <MudItem xs="12" sm="7">
+
+                <MudPaper Class="pa-2">
+                    @*          <MudButton Class="ml-n1" Variant="Variant.Filled" Color="Color.Primary" DisableElevation="true" OnClick="@Back">Back</MudButton>*@
+                    <MudIconButton Icon="@Icons.Filled.ArrowBackIosNew" Color="Color.Secondary" OnClick="@Back"></MudIconButton>
+                </MudPaper>
+                <MudCard>
+                    <MudCardContent>
+                        @*<MudTextField Label="Id" Disabled="true" @bind-Value="_JobOffers.Id" For="@(() => _JobOffers.Id)" />*@
+
+                        <MudDatePicker Label="Date" Editable="true" @bind-Date="_Interest.CreatedDate" Variant="Variant.Outlined" HelperText="Select Date" HelperTextOnFocus="true" Required="true" />
+
+
+                        <MudTextField Label="Folder Name" HelperText="Question of employee. Max. 50 characters" @bind-Value="_Interest.Name" For="@(() => _Interest.Name)" Required="true" HelperTextOnFocus="true" Variant="Variant.Outlined" />
+
+                        <MudTextField Label="Note" HelperText="Note. Max. 3000 characters" @bind-Value="_Interest.Note" For="@(() => _Interest.Note)" Required="false" HelperTextOnFocus="true" Variant="Variant.Outlined" Lines="5" />
+
+                        <MudTextField Label="Internal note" HelperText="Internal note. Max. 3000 characters" @bind-Value="_Interest.InternalNote" For="@(() => _Interest.InternalNote)" Required="false" HelperTextOnFocus="true" Variant="Variant.Outlined" Lines="7" />
+
+                        <MudCheckBox T="bool" Class="ml-n2" Label="Is Active" @bind-Checked="_Interest.IsActive" For="@(() => _Interest.IsActive)" />
+
+                        <div Class="d-flex gap-4" style=" display: flex; flex-wrap: wrap;">
+                            @foreach (var item in _Gallery.OrderBy(s => s.CreatedDate).ToList())
+                            {
+
+                                <div style="max-width:185px">
+                                    <MudCard Square="false">
+                                        <MudCardMedia Height="100" Image="@item.Path" Class="rounded-lg" />
+                                        @*<MudIconButton Style="position:absolute;" Icon="@Icons.Rounded.Delete"></MudIconButton>*@
+                                        <div class="d-flex gap-1">
+                                            <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="@(() => DeleteImage(item.Path, item.Id))" />
+                                            <MudTextField @bind-Value="@item.Note" TextChanged="@(() => UpdateImageWithoutRefresh( item.Id))" Variant="Variant.Text" Margin="Margin.Dense"></MudTextField>
+                                        @*    <MudDatePicker AllowKeyboardInput="true" @bind-Value="item.CreatedDate" Style="max-width:65px" TextChanged="@(() => UpdateImageWithoutRefresh( item.Id))" Variant="Variant.Text"  Margin="Margin.Dense"  />*@
+                                        </div>
+                                    </MudCard>
+                                </div>
+
+                            }
+                        </div>
+
+                    </MudCardContent>
+                    <MudCardActions>
+
+                        <InputFile id="fileInput" OnChange="LoadFiles" hidden accept=".jpg, .jpeg, .png" multiple />
+                        <MudTooltip Text="@("Max. Files: " + maxAllowedFiles)" Color="Color.Error" Placement="Placement.Bottom">
+                            <MudButton StartIcon="@Icons.Outlined.UploadFile" Disabled="isLoading" Size="Size.Large" HtmlTag="label" Color="Color.Info" For="fileInput">
+                                @if (isLoading)
+                                {
+                                    <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                                    <MudText Class="ms-2">Progress: @string.Format("{0:P0}", progressPercent)</MudText>
+                                }
+                                else
+                                {
+                                    <MudText>Upload image</MudText>
+                                }
+                            </MudButton>
+                        </MudTooltip>
+
+
+
+                        <MudButton Disabled="_processing" ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto">
+                            @if (_processing)
+                            {
+                                <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                                <MudText Class="ms-2">Working</MudText>
+                            }
+                            else
+                            {
+                                <MudText>Confirm</MudText>
+                            }
+                        </MudButton>
+                    </MudCardActions>
+                </MudCard>
+            </MudItem>
+            <MudItem xs="12" sm="5">
+                <MudPaper Class="pa-4 mud-height-full">
+                    <MudText Typo="Typo.subtitle2">Validation Summary</MudText>
+                    @if (success)
+                    {
+                        <MudText Color="Color.Success">Success</MudText>
+                    }
+                    else
+                    {
+                        <MudText Color="@Color.Error">
+                            <ValidationSummary />
+                        </MudText>
+                    }
+                </MudPaper>
+            </MudItem>
+            <MudItem xs="12">
+                <MudText Typo="Typo.body2" Align="Align.Center">
+                    Fill out the form correctly to see the success message.
+                </MudText>
+            </MudItem>
+        </MudGrid>
+    </EditForm>
+
+
+
+}
+
+
+<style>
+
+
+    .ql-toolbar .ql-stroke {
+        fill: none;
+        stroke: #A1A1A1;
+    }
+
+    .ql-toolbar .ql-fill {
+        fill: #A1A1A1;
+        stroke: none;
+    }
+
+    .ql-toolbar .ql-picker {
+        color: #A1A1A1;
+    }
+</style>
+@code
+{
+    [Parameter]
+    public string Id { get; set; }
+
+    private Folder _Interest { get; set; }
+    private List<WebMud.Models.Gallery>? _Gallery { get; set; }
+
+
+    bool success = false;
+    private bool _processing = false;
+    private bool _Disabled = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        bool isValid = Guid.TryParse(Id, out Guid result);
+
+
+        if (!string.IsNullOrEmpty(Id) & Id == "0")
+        {
+            _Interest = new Folder();
+            _Gallery = new List<Gallery>();
+            _Disabled = true;
+            _Interest.CreatedDate = DateTime.Now;
+        }
+        else
+        {
+            if (!isValid)
+            {
+
+                Navigation.NavigateTo("/application/folder");
+
+            }
+            else
+            {
+
+                _Interest = await InterestService.GetFolder(Guid.Parse(Id));
+                _Gallery = await GalleryService.GetGalleryOnlyActiveAll(Guid.Parse(Id));
+
+            }
+
+
+        }
+
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+
+    }
+
+    private async Task OnValidSubmit()
+    {
+
+        _processing = true;
+        await Task.Delay(1);
+
+
+        if (_Interest.Id == Guid.Empty)
+        {
+            var id = Guid.NewGuid();
+            _Interest.Id = id;
+
+            foreach (var item in _Gallery)
+            {
+                item.FolderLink = id.ToString();
+                await GalleryService.AddGallery(item);
+            }
+            await InterestService.AddFolder(_Interest);
+
+            success = true;
+
+        }
+        else
+        {
+
+            foreach (var item in _Gallery)
+            {
+
+                var res = await GalleryService.GetGallery(item.Id);
+                if (res == null)
+                {
+
+                    item.FolderLink = _Interest.Id.ToString();
+                    await GalleryService.AddGallery(item);
+
+                }
+
+            }
+            await InterestService.UpdateFolder(_Interest);
+
+            success = true;
+
+        }
+
+        _processing = false;
+
+        StateHasChanged();
+    }
+
+    private void OnInvalidSubmit()
+    {
+
+        success = false;
+    }
+
+    private void Back()
+    {
+
+        Navigation.NavigateTo("/application/folder");
+
+    }
+
+
+
+
+
+
+
+
+    private async void DeleteImage(string path, Guid id)
+    {
+
+
+
+
+        var res = await GalleryService.GetGallery(id);
+        if (res != null)
+        {
+
+            await GalleryService.DeleteGallery(id, path);
+
+        }
+        _Gallery.Remove(_Gallery.First(note => note.Id == id));
+        StateHasChanged();
+    }
+
+    private async void UpdateImage(Guid id)
+    {
+
+        await GalleryService.UpdateGallery(_Gallery.First(note => note.Id == id));
+
+        StateHasChanged();
+    }
+
+    private async void UpdateImageWithoutRefresh(Guid id)
+    {
+
+        await GalleryService.UpdateGallery(_Gallery.First(note => note.Id == id));
+
+        StateHasChanged();
+    }
+    //---------------------UPLOAD----------------------------------
+
+    private List<IBrowserFile> loadedFiles = new();
+    private long maxFileSize = 1024 * 1024 * 25;
+    private int maxAllowedFiles = 10;
+    private bool isLoading;
+    private double progressPercent;
+
+    private async Task LoadFiles(InputFileChangeEventArgs e)
+    {
+        isLoading = true;
+        loadedFiles.Clear();
+        progressPercent = 0;
+        //await Task.Delay(1);
+
+        int i = 0;
+
+        foreach (var file in e.GetMultipleFiles(maxAllowedFiles))
+        {
+
+            if (Path.GetExtension(file.Name).ToLower() == ".jpg" || Path.GetExtension(file.Name).ToLower() == ".jpeg" || Path.GetExtension(file.Name).ToLower() == ".png")
+            {
+
+
+                try
+                {
+                    i++;
+                    string id = Guid.NewGuid().ToString();
+                    var trustedFileName = Path.GetRandomFileName();
+                    var path = $"{Environment.WebRootPath}\\images\\{id + Path.GetExtension(file.Name)}";
+                    Console.Write(path.ToString());
+                    await using FileStream writeStream = new(path, FileMode.Create);
+                    var resizedimg = await file.RequestImageFileAsync(file.ContentType, 1920, 1080);
+                    using var readStream = resizedimg.OpenReadStream(maxFileSize);
+                    var bytesRead = 0;
+                    var totalRead = 0;
+                    var buffer = new byte[1024 * 10];
+
+                    while ((bytesRead = await readStream.ReadAsync(buffer)) != 0)
+                    {
+                        totalRead += bytesRead;
+
+                        await writeStream.WriteAsync(buffer, 0, bytesRead);
+
+                        progressPercent = Convert.ToDouble(Decimal.Divide(totalRead, file.Size));
+
+                        StateHasChanged();
+                    }
+
+                    loadedFiles.Add(file);
+
+
+                    Gallery img = new Gallery();
+                    img.Id = Guid.NewGuid();
+                    img.Path = ($"/images/{id + Path.GetExtension(file.Name)}");
+                    img.IsActive = true;
+                    img.IsDeleted = false;
+
+                    img.CreatedDate = DateTime.Now;
+
+
+
+                    _Gallery.Add(img);
+
+                    StateHasChanged();
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("File: {Filename} Error: {Error}",
+                        file.Name, ex.Message);
+                }
+            }
+        }
+
+        //var timer = new Timer(new TimerCallback(_ =>
+        //{
+        //    Navigation.NavigateTo(Navigation.Uri, forceLoad: true);
+        //}), null, 500, 500);
+
+        isLoading = false;
+    }
+
+
+}
+
+
+

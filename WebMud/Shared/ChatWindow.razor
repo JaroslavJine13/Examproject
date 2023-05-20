@@ -1,0 +1,247 @@
+﻿@attribute [AllowAnonymous]
+@inject NavigationManager Navigation
+
+@using WebMud.Models
+@using WebMud.Data
+@inject NavigationManager UriHelper
+@inject IUsersService UsersService
+@inject IDialogService DialogService
+@inject WebMud.Data.IChatService ChatService
+@inject IJSRuntime jsRuntime
+
+@using Microsoft.Extensions.Localization
+@using System.Globalization
+@using WebMud.Public.PublicShared
+@using System.ComponentModel.DataAnnotations;
+@using Microsoft.AspNetCore.SignalR.Client;
+@using Microsoft.AspNetCore.SignalR;
+@using WebMud.Pages.Applications.Chat
+
+@if (targetuser is null || users is null)
+{
+
+    <div class="centered" style="display: flex; justify-content: center;  ">
+        <MudProgressCircular Color="Color.Secondary" Size="Size.Large" Indeterminate="true" />
+    </div>
+
+
+}
+else
+{
+
+
+
+    <MudPaper Class="py-3 flex-grow-1">
+        <MudToolBar Dense="true">
+            @*<MudHidden Breakpoint="Breakpoint.MdAndUp">
+                    <MudIconButton Icon="@Icons.Material.Outlined.Menu" Color="Color.Inherit" Class="mr-2 ml-n2" />
+                </MudHidden>*@
+            <MudIcon Icon="@Icons.Material.Outlined.ChatBubble" Style="margin-right:10px"></MudIcon>
+            <MudText Typo="Typo.h6" Inline="true" Class="mr-2">@(targetuser.FName + " " + targetuser.SName.ToUpper().FirstOrDefault())</MudText>
+            <MudSpacer />
+            <MudSpacer />
+
+        </MudToolBar>
+        <div class="d-flex flex-column px-4" style="max-height: 65vh; min-height: 65vh; overflow: scroll;" id="chatContainer">
+            @foreach (var item in _messages)
+            {
+                @*@if (item.IsNotice)
+                    {
+                        <div class="alert alert-info">@item.Body</div>
+                    }*@
+
+
+                <div style="@item.Aligment">
+                    <UserMessage UserName="@item.Username" Message="@item.Body" ChatUser="@targetuser" Theme="@item.CSS" Mine="@item.Mine" />
+                </div>
+
+
+            }
+        </div>
+        <MudPaper Class="d-flex flex-row px-2 mx-4" Style="background-color: var(--mud-palette-background-grey);">
+            <MudTextField T="string" Placeholder="Message #chat" DisableUnderLine="true" Class="mt-n2 mx-4" TextUpdateSuppression="false" @bind-Text="_newMessage" @onkeyup="@(() => SendAsync(_newMessage))"></MudTextField>
+            <MudIconButton Icon="@Icons.Filled.Send" Color="Color.Warning" @onclick="@(() => SendAsync(_newMessage))"></MudIconButton>
+        </MudPaper>
+
+    </MudPaper>
+}
+
+
+@code {
+    [Parameter]
+    public string ResFrom { get; set; }
+
+    [Parameter]
+    public Guid ResTo { get; set; }
+
+
+
+    //------chat---------------------
+    private List<Users> _Users;
+    public bool _isOpen;
+    public bool _isRoomOpen;
+
+    // flag to indicate chat status
+    private bool _isChatting = false;
+
+    // name of the user who will be chatting
+    private string _username;
+    private string _idname { get; set; }
+
+    private string _targetusername;
+
+    // on-screen message
+    private string _message;
+
+    // new message input
+    private string? _newMessage { get; set; }
+
+    // list of messages in chat
+    public List<Message> _messages = new List<Message>();
+
+    private string _hubUrl;
+    private HubConnection _hubConnection;
+
+
+
+    private Users users { get; set; }
+    private Users targetuser { get; set; }
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        users = await UsersService.GetUsers(ResFrom);
+        targetuser = await UsersService.GetUsers(ResTo);
+        if (targetuser == null)
+        {
+
+
+        }
+        else
+        {
+
+            _username = users.Email;
+            _targetusername = targetuser.Email;
+
+
+            await Task.Delay(1);
+
+            await Chat();
+
+            await ChatService.ChangeNotice(targetuser.Id.ToString(), users.Id.ToString());
+            _newMessage = "";
+
+
+
+
+            StateHasChanged();
+
+        }
+
+    }
+
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+
+        if (_isChatting)
+        {
+
+
+            await jsRuntime.InvokeAsync<string>("ScrollToBottom", "chatContainer");
+
+
+
+        }
+    }
+
+    public async Task Chat()
+    {
+
+
+        try
+        {
+
+            await Task.Delay(1);
+
+
+            string baseUrl = Navigation.BaseUri;
+            _hubUrl = baseUrl.TrimEnd('/') + BlazorChat.HubUrl;
+
+            _hubConnection = new HubConnectionBuilder()
+                .WithUrl(_hubUrl)
+                .Build();
+
+            _hubConnection.On<Message>("SendPrivateMessage", BroadcastMessage);
+
+
+            //měl bych to uzavřít
+            await _hubConnection.StartAsync();
+
+            await _hubConnection.SendAsync("JoinGroup", users.Id.ToString(), users.Id.ToString());
+
+            var chatlist = await ChatService.GetMessage(targetuser.Id.ToString(), users.Id.ToString());
+
+            foreach (var x in chatlist.OrderBy(x => x.CreatedDate).ToList())
+            {
+                bool isMine = x.Username.Equals(_username, StringComparison.OrdinalIgnoreCase);
+                x.Mine = isMine;
+                x.IsAligment = isMine;
+                _messages.Add(x);
+
+            }
+
+            _isChatting = true;
+        }
+        catch (Exception e)
+        {
+            _message = $"ERROR: Failed to start chat client: {e.Message}";
+            _isChatting = false;
+        }
+    }
+
+    private async Task BroadcastMessage(Message message)
+    {
+        bool isMine = message.Username.Equals(_username, StringComparison.OrdinalIgnoreCase);
+        message.Mine = isMine;
+        message.IsAligment = isMine;
+
+        if ((message.ToUserId == targetuser.Id.ToString() && message.FromUserId == users.Id.ToString()) || (message.ToUserId == users.Id.ToString() && message.FromUserId == targetuser.Id.ToString()))
+        {
+            _messages.Add(message);
+        }
+        // Inform blazor the UI needs updating
+
+        StateHasChanged();
+    }
+
+    private async Task SendAsync(string message)
+    {
+        if (!string.IsNullOrWhiteSpace(message))
+        {
+
+            Message msg = new Message();
+            msg.Username = _username;
+            msg.Body = message;
+            msg.Mine = true;
+            msg.FromUserId = users.Id.ToString();
+            msg.ToUserId = targetuser.Id.ToString();
+            msg.IsAligment = true;
+            msg.CreatedDate = DateTime.Now;
+            msg.IsNotice = false;
+            await _hubConnection.SendAsync("SendPrivateMessage", msg);
+            await _hubConnection.SendAsync("Notification", msg);
+            Task.Delay(1);
+            _newMessage = string.Empty;
+            StateHasChanged();
+
+        }
+    }
+
+
+
+
+
+    }

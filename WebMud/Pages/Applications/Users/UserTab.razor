@@ -1,0 +1,123 @@
+﻿@page "/admin/Users"
+@using WebMud.Data
+@using WebMud.Models
+@inject WebMud.Data.IUsersService UsersService
+@attribute [Authorize(Roles = "Admin")]
+
+
+<MudTable Items="@Users" Hover="true" Breakpoint="Breakpoint.Sm" Loading="@_loading" LoadingProgressColor="Color.Info" Filter="new Func<Users,bool>(FilterFunc1)">
+    <ToolBarContent>
+        <MudButton Variant="Variant.Filled" StartIcon="@Icons.Outlined.PersonAdd" Link="/User/0" Color="Color.Tertiary">ADD</MudButton>
+        <MudButton Variant="Variant.Filled" Class="ml-3" StartIcon="@Icons.Outlined.Refresh" OnClick="(() => OnInitializedAsync())" Color="Color.Info">Refresh</MudButton>
+        <MudSpacer />
+        <MudTextField @bind-Value="searchString1" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0"></MudTextField>
+    </ToolBarContent>
+    <HeaderContent>
+        <MudTh>ID</MudTh>
+
+        <MudTh>FIRST NAME</MudTh>
+
+        <MudTh>SECOND NAME</MudTh>
+
+        <MudTh>EMAIL</MudTh>
+
+        <MudTh>POSITION</MudTh>
+
+
+        <MudTh>TRAFIC</MudTh>
+
+        <MudTh>EDIT</MudTh>
+
+        <MudTh>DELETE</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="ID">@context.Id</MudTd>
+
+        <MudTd DataLabel="FIRST NAME">@context.FName</MudTd>
+
+        <MudTd DataLabel="SECOND NAME">@context.SName</MudTd>
+
+        <MudTd DataLabel="EMAIL">@context.Email</MudTd>
+
+        <MudTd DataLabel="POSITION">@context.Position</MudTd>
+
+
+        <MudTd DataLabel="TRAFIC">@context.TrafficCount.ToString()</MudTd>
+
+        <MudTd DataLabel="">
+            @{string res = "User/" + @context.Id;}
+            <MudButton Link=@res Variant="Variant.Outlined" EndIcon="@Icons.Outlined.Settings" Color="Color.Primary">Edit</MudButton>
+        </MudTd>
+
+        <MudTd DataLabel="">
+            <MudButton EndIcon="@Icons.Material.Filled.Delete" Variant="Variant.Outlined" Color="Color.Error" OnClick="@(e=> OnDelete(context.Id))">Delete</MudButton>
+        </MudTd>
+    </RowTemplate>
+</MudTable>
+
+@code
+{
+    private bool _hidePosition;
+    private bool _loading;
+    private List<Users> Users;
+
+    private string searchString1 = "";
+    private Users selectedItem1 = null;
+    private HashSet<Users> selectedItems = new HashSet<Users>();
+
+    [Inject] private IDialogService DialogService { get; set; }
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        Users = await UsersService.GetUsers();
+    }
+
+    private async Task OnDelete(Guid id)
+    {
+
+
+        bool? result = await DialogService.ShowMessageBox(
+"Warning",
+"Deleting can not be undone!",
+yesText: "Delete!", cancelText: "Cancel");
+
+
+
+        if (result == true)
+        {
+
+            await UsersService.DeleteUsers(id);
+
+            await OnInitializedAsync();
+            StateHasChanged();
+        }
+
+
+
+
+
+
+    }
+
+    private bool FilterFunc1(Users element) => FilterFunc(element, searchString1);
+
+    private bool FilterFunc(Users element, string searchString)
+    {
+        if (string.IsNullOrWhiteSpace(searchString))
+            return true;
+        if (element.FName.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (element.SName.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (element.Email.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (element.Position.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if ($"{element.FName} {element.SName} {element.Position} {element.Email}".Contains(searchString))
+            return true;
+        return false;
+    }
+
+
+}

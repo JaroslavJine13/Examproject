@@ -1,0 +1,123 @@
+﻿@inject WebMud.Data.IUsersService UsersService
+@inject NavigationManager Navigation
+@inject IEmailServices _emailServices
+
+@using Microsoft.Extensions.Localization
+@using System.Globalization
+@using System.Text.RegularExpressions
+@using WebMud.Data
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Identity;
+@using Microsoft.AspNetCore.WebUtilities;
+@using WebMud.Models
+@using WebMud.Data
+
+<EditForm Model="@_Cred" OnValidSubmit="OnValidSubmit">
+    <MudDialog>
+        <DialogContent>
+
+
+            <DataAnnotationsValidator />
+
+
+
+    
+                    <MudTextField Label="Jméno" HelperText="Max. 50 characters" HelperTextOnFocus="true"
+                                  @bind-Value="_Cred.FName" For="@(() => _Cred.FName)" Required="true" />
+                    <MudTextField Label="Příjmení" HelperText="Max. 50 characters" HelperTextOnFocus="true"
+                                  @bind-Value="_Cred.SName" For="@(() => _Cred.SName)" Required="true" />
+
+
+
+
+          
+
+
+        </DialogContent>
+        <DialogActions>
+            <MudIconButton  Icon="@Icons.Filled.ExitToApp" Color="Color.Error" OnClick="Cancel"> </MudIconButton>
+
+            <MudButton Disabled="@_processing" ButtonType="ButtonType.Submit" Variant="Variant.Filled" StartIcon="@Icons.Outlined.Login" Color="Color.Primary" Class="ml-auto">
+                @if (_processing)
+                {
+                    <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                    <MudText Class="ms-2">Pracuji</MudText>
+                }
+                else
+                {
+                    <MudText>Potvrdit</MudText>
+                }
+            </MudButton>
+        </DialogActions>
+    </MudDialog>
+</EditForm>
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+
+
+
+    [Parameter]
+    public string Username { get; set; }
+
+    void Submit() => MudDialog.Close(DialogResult.Ok(true));
+    void Cancel() => MudDialog.Cancel();
+
+
+
+    private Users users { get; set; }
+    private bool _processing = false;
+
+    private Credentials _Cred { get; set; }
+    private class Credentials
+    {
+        [StringLength(50)]
+        [Required(ErrorMessage = "First name is required.")]
+        public string FName { get; set; }
+
+        [StringLength(50)]
+        [Required(ErrorMessage = "Second name is required.")]
+        public string SName { get; set; }
+
+    }
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        users = new Users();
+        _Cred = new Credentials();
+    }
+
+
+    private async Task OnValidSubmit()
+    {
+        _processing = true;
+        await Task.Delay(1);
+        if (users.Id == Guid.Empty)
+        {
+
+
+
+            string pass = Guid.NewGuid().ToString();
+            Username = Guid.NewGuid().ToString();
+            users.Email = Username;
+            users.FName = _Cred.FName;
+            users.SName = _Cred.SName;
+            users.Position = "Guest";
+            users.Password = pass;
+            users.Password2 = pass;
+            await UsersService.AddGusetUser(users);
+
+            string message = @"
+
+<p>Attention!</p>
+<p>A new Chat has arrived from a user: " + _Cred.FName + " " + _Cred.SName + "<br /></p>";
+
+            await _emailServices.SendEmailAsync(AdminSettings.EmailGeneric
+            , "New Chat", message);
+
+
+            MudDialog.Close(DialogResult.Ok(Username));
+        }
+        _processing = false;
+    }
+}

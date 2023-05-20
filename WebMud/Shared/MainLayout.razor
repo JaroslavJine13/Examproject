@@ -1,0 +1,232 @@
+﻿@inherits LayoutComponentBase
+@attribute [Authorize(Roles = "Admin, User")]
+@inject NavigationManager Navigation
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject ISnackbar Snackbar
+@using Microsoft.AspNetCore.SignalR.Client;
+@using Microsoft.AspNetCore.SignalR;
+@using WebMud.Data
+@using WebMud.Models
+@inject WebMud.Data.IUsersService UsersService
+@inject IJSRuntime JS
+
+@using WebMud.Pages.Personal
+<MudThemeProvider @bind-IsDarkMode="@DarkOn" Theme="_theme" />
+<MudDialogProvider />
+<MudSnackbarProvider />
+
+<MudLayout>
+    <AuthorizeView Roles="Admin, User">
+        <Authorized>
+            @*@{Guid uid = new Guid(context.User.Claims.First().Value);}
+                @{string account = "/personal/account/" + uid.ToString();}*@
+            <MudAppBar Elevation="25">
+                <MudHidden Breakpoint="Breakpoint.SmAndDown">
+                    <MudIcon Icon="@Icons.Outlined.Settings" Size="Size.Large" />
+                </MudHidden>
+                <MudHidden Breakpoint="Breakpoint.MdAndUp">
+                    <MudIconButton Icon="@Icons.Material.Outlined.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
+                </MudHidden>
+                <MudHidden Breakpoint="Breakpoint.Xs">
+                    <MudText Typo="Typo.h6" Class="ml-4">Administration</MudText>
+                </MudHidden>
+                <MudHidden Breakpoint="Breakpoint.Xs" Invert="true">
+                    <MudText Typo="Typo.subtitle2"></MudText>
+                </MudHidden>
+                <MudSpacer />
+                <MudHidden Breakpoint="Breakpoint.Xs">
+                    <span>Dark mode: @(DarkOn ? "On" : "Off")</span>
+
+                </MudHidden>
+                <MudToggleIconButton ToggledChanged="(() => SetDarkMode())" Toggled="DarkOn"
+                                     Icon="@Icons.Filled.DarkMode" Color="@Color.Inherit" Title="Off"
+                                     ToggledIcon="@Icons.Filled.WbSunny" ToggledColor="@Color.Warning" ToggledTitle="On" />
+
+
+                <p Class="ml-2">Hello @context.User.Claims.First().Subject.Name</p>
+
+                @*<MudMenu Icon="@Icons.Material.Outlined.Translate" Color="Color.Inherit" Direction="Direction.Bottom" OffsetY="true" Dense="true">
+                        <MudMenuItem>English</MudMenuItem>
+                        <MudMenuItem>Swedish</MudMenuItem>
+                        <MudMenuItem>Old Norse</MudMenuItem>
+                    </MudMenu>*@
+                @*<MudMenu Icon="@Icons.Material.Outlined.Widgets" Color="Color.Inherit" Direction="Direction.Bottom" OffsetY="true" Dense="true">
+                        <MudMenuItem Link="https://mudblazor.com/">MudBlazor</MudMenuItem>
+                        <MudMenuItem Link="https://github.com/Garderoben/WebMuds">Source Code</MudMenuItem>
+                    </MudMenu>*@
+                <MudMenu Direction="Direction.Left" OffsetX="true" Dense="true" Class="mt-1 ml-4">
+                    <ActivatorContent>
+                        <MudAvatar Image="@AvatarImageLink">
+                            @if (users is null)
+                            {
+                                <MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true" />
+                            }
+                            else
+                            {
+
+                                @if (!String.IsNullOrEmpty(users.AvatarPath))
+                                {
+                                    <MudAvatar Image="@users.AvatarPath" />
+                                }
+                                else
+                                {
+                                    <MudAvatar Color="Color.Dark" Style="height:50px; width:50px;">@users.FName.ToUpper().FirstOrDefault() @users.SName.ToUpper().FirstOrDefault()</MudAvatar>
+                                }
+
+                            }
+
+                        </MudAvatar>
+                    </ActivatorContent>
+                    <ChildContent>
+                        <PersonCard Class="mt-n2" />
+                        <MudDivider Class="mb-2" />
+                        <MudListItem Text="Account" Icon="@Icons.Material.Outlined.Person" Href="/personal/account" />
+                        <form method="get">
+                            <MudListItem Text="Logout" Icon="@Icons.Material.Outlined.Login" Href="/pages/authentication/logout" />
+                        </form>
+                        <MudListItem Text="Frontend" Icon="@Icons.Material.Outlined.Home" OnClick="@(() => RedirectToPage(Navigation.BaseUri))" />
+                    </ChildContent>
+                </MudMenu>
+            </MudAppBar>
+            <MudDrawer @bind-Open="_drawerOpen" Elevation="25" ClipMode="DrawerClipMode.Always">
+                <NavMenu />
+            </MudDrawer>
+            <MudMainContent>
+                <MudHidden Breakpoint="Breakpoint.SmAndDown">
+                    <MudToolBar DisableGutters="true">
+                        <MudIconButton Icon="@Icons.Material.Outlined.Menu" Color="Color.Inherit" OnClick="@((e) => DrawerToggle())" Class="ml-3" />
+                        @*<MudBreadcrumbs Items="_items"></MudBreadcrumbs>*@
+                        <MudSpacer />
+                        @*<MudButton Variant="Variant.Text" Link="https://mudblazor.com/" Style="color:#594AE2;">MudBlazor</MudButton>
+                            <MudButton Variant="Variant.Text" Link="https://github.com/Garderoben/WebMuds" Style="color:#424242;" Class="mr-3">Source Code</MudButton>*@
+                    </MudToolBar>
+                </MudHidden>
+                <MudContainer MaxWidth="MaxWidth.False" Class="mt-4">
+                    @Body
+                </MudContainer>
+            </MudMainContent>
+        </Authorized>
+        <NotAuthorized>
+            <h1>Sorry</h1>
+            <p>You're not authorized to reach this page.</p>
+            <p>You may need to log in as a different user.</p>
+        </NotAuthorized>
+    </AuthorizeView>
+
+</MudLayout>
+
+
+@code {
+    private MudBlazorAdminDashboard _theme = new();
+    public Users users { get; set; }
+    public bool _drawerOpen = true;
+    public bool DarkOn { get; set; }
+    public string AvatarImageLink { get; set; }
+    public string AvatarIcon { get; set; }
+    private System.Security.Claims.ClaimsPrincipal Authuser { get; set; }
+    private HubConnection hubConnection;
+    public bool IsConnected => hubConnection.State == HubConnectionState.Connected;
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        var authstate = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        Authuser = authstate.User;
+
+        if (authstate.User.Identity.IsAuthenticated)
+        {
+
+
+            string baseUrl = Navigation.BaseUri;
+            string hubUrl = baseUrl.TrimEnd('/') + BlazorChat.HubUrl;
+
+            hubConnection = new HubConnectionBuilder()
+                .WithUrl(hubUrl)
+                .Build();
+            await hubConnection.StartAsync();
+            hubConnection.On<Message>("Notification", BroadcastMessage);
+            users = await UsersService.GetUsers(Authuser.Identity.Name);
+            AvatarImageLink = users.AvatarPath;
+
+            if (!AdminSettings.IsDefaultDark)
+            {
+                DarkOn = users.IsDark;
+            }
+            else
+            {
+                DarkOn = AdminSettings.IsDefaultDark;
+            }
+
+        }
+        else
+        {
+
+            Navigation.NavigateTo("/");
+
+        }
+
+    }
+    private void BroadcastMessage(Message message)
+    {
+
+
+        if (Authuser.Claims.First().Value == message.ToUserId)
+        {
+            Snackbar.Configuration.MaxDisplayedSnackbars = 3;
+            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.TopLeft;
+            Snackbar.Configuration.SnackbarVariant = Variant.Filled;
+            Snackbar.Add(message.Username + ": " + message.Body, Severity.Info, config =>
+            {
+
+                config.VisibleStateDuration = 3000;
+                config.HideTransitionDuration = 500;
+                config.ShowTransitionDuration = 500;
+                config.Action = "Chat?";
+                config.ActionColor = Color.Warning;
+                config.ActionVariant = Variant.Filled;
+                config.Onclick = snackbar =>
+                {
+                    Navigation.NavigateTo($"/application/chatroom/{message.FromUserId}");
+                    return Task.CompletedTask;
+                };
+            });
+            StateHasChanged();
+        }
+
+
+    }
+
+    void DrawerToggle()
+    {
+        _drawerOpen = !_drawerOpen;
+    }
+
+    private List<BreadcrumbItem> _items = new List<BreadcrumbItem>
+{
+        new BreadcrumbItem("Personal", href: "#"),
+        new BreadcrumbItem("Dashboard", href: "#"),
+    };
+
+    private async Task SetDarkMode()
+    {
+        if (DarkOn)
+        {
+            DarkOn = false;
+        }
+        else
+        {
+            DarkOn = true;
+        }
+        await UsersService.UpdateDarkMode(DarkOn, new Guid(Authuser.Claims.First().Value));
+
+    }
+
+
+    private async Task RedirectToPage(string url)
+    {
+
+        await JS.InvokeAsync<object>("open", url, "_blank");
+
+    }
+
+}

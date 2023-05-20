@@ -1,0 +1,58 @@
+﻿@page "/pages/authentication/forgot-password"
+@layout LoginLayout
+@attribute [AllowAnonymous]
+@inject IEmailServices EmailService
+@inject IUsersService UserService
+@using WebMud.Data
+@using WebMud.Models
+@inject NavigationManager Navigation
+
+<MudText Typo="Typo.h4" GutterBottom="true">Forgot Password?</MudText>
+
+<MudText Typo="Typo.subtitle2">Enter the email address linked to your account and you will recieve an email containing a link to reset your password. It will take 30 seconds.</MudText>
+
+<MudTextField T="string" Label="E-mail" @bind-Value="mail" Variant="Variant.Outlined" Class="my-4"></MudTextField>
+
+<MudButton Disabled="_processing" OnClick="(() => ResetRequest(mail))" Variant="Variant.Filled" Color="Color.Primary" Class="mt-3" Size="Size.Large">
+    @if (_processing)
+    {
+        <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+        <MudText Class="ms-2">Working</MudText>
+    }
+    else
+    {
+        <MudText>Reset Password</MudText>
+    }
+</MudButton>
+
+
+@code {
+
+    private string mail { get; set; }
+    private Users user;
+    private bool _processing = false;
+    protected override async Task OnInitializedAsync()
+    {
+
+
+
+    }
+
+    private async void ResetRequest(string email)
+    {
+
+        _processing = true;
+        await Task.Delay(30000);
+        user = await UserService.GetUsers(email);
+
+        if (user != null)
+        {
+
+            await UserService.ResetUsersPass(user.Id, user.Email, Navigation.BaseUri);
+
+        }
+        _processing = false;
+        StateHasChanged();
+    }
+
+}

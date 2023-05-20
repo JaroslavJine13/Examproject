@@ -1,0 +1,193 @@
+﻿@page "/application/tickets"
+@inject NavigationManager navigationManager
+@inject AuthenticationStateProvider GetAuthenticationStateAsync
+@inject ITicketsService TicketsService
+@inject IUsersService UsersService
+@using WebMud.Data
+@using WebMud.Models
+ 
+
+@attribute [Authorize(Roles = "Admin, User")]
+
+
+<MudTable Items="@_Tickets" Hover="true" Breakpoint="Breakpoint.Sm" Loading="@_loading" LoadingProgressColor="Color.Info" Filter="new Func<WebMud.Models.Tickets ,bool>(FilterFunc1)">
+    <ToolBarContent>
+        <MudButton Variant="Variant.Filled" StartIcon="@Icons.Outlined.Refresh" OnClick="(() => OnInitializedAsync())" Color="Color.Info">Refresh</MudButton>
+        <MudSpacer />
+        <MudTextField @bind-Value="searchString1" Variant="Variant.Text" DisableUnderLine="false" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0" Clearable="true"></MudTextField>
+    </ToolBarContent>
+    <HeaderContent>
+
+
+        <MudTh>NOTICE:</MudTh>
+
+        <MudTh>DATE:</MudTh>
+
+        <MudTh>FIRST NAME:</MudTh>
+
+        <MudTh>SECOND NAME:</MudTh>
+
+        <MudTh>EMAIL:</MudTh>
+
+        <MudTh>COMPANY:</MudTh>
+
+        <MudTh>ASSIGNED TO USER:</MudTh>
+
+        <MudTh>EDIT:</MudTh>
+
+        <MudTh>DELETE:</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+
+        <MudTd DataLabel="NOTICE:">
+            <MudToggleIconButton Class="mt-3 " @bind-Toggled="@context.IsNoticed" @onclick="@(e=> OnNotificationClick(context.Id, context.IsNoticed))"
+                                 Icon="@Icons.Filled.NotificationsActive" Color="@Color.Error" Title="Off"
+                                 ToggledIcon="@Icons.Filled.Notifications" ToggledColor="@Color.Default" ToggledTitle="On" />
+
+        </MudTd>
+
+        <MudTd DataLabel="DATE">@context.CreatedDate</MudTd>
+
+        <MudTd DataLabel="FIRST NAME">@context.Fname</MudTd>
+
+        <MudTd DataLabel="SECOND NAME">@context.Sname</MudTd>
+
+        <MudTd DataLabel="EMAIL">@context.Email</MudTd>
+
+        <MudTd DataLabel="COMPANY">@context.Company</MudTd>
+
+        <MudTd DataLabel="ASSIGNED USER"> @Getname(context.AssignedUserID)</MudTd>
+
+        <MudTd DataLabel="">
+            @{string res = "/application/tickets/" + @context.Id;}
+            <MudButton Variant="Variant.Outlined" Link="@res" EndIcon="@Icons.Outlined.Settings" Color="Color.Primary">Edit</MudButton>
+        </MudTd>
+
+        <MudTd DataLabel="">
+            <MudButton EndIcon="@Icons.Material.Filled.Delete" Variant="Variant.Outlined" Color="Color.Error" OnClick="@(e=> OnDelete(context.Id))">Delete</MudButton>
+        </MudTd>
+    </RowTemplate>
+    <PagerContent>
+        <MudTablePager InfoFormat="@($"Center {infoFormat}")" HorizontalAlignment="HorizontalAlignment.Center" HidePageNumber="false" HidePagination="false" HideRowsPerPage="true" />
+    </PagerContent>
+</MudTable>
+
+@code
+{
+
+    [Inject] private IDialogService DialogService { get; set; }
+
+    private bool _loading;
+    private List<WebMud.Models.Tickets> _Tickets;
+    private List<Users> _Users;
+    private System.Security.Claims.ClaimsPrincipal Authuser { get; set; }
+    private string searchString1 = "";
+    private string infoFormat = "{first_item}-{last_item} of {all_items}";
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authstate = await GetAuthenticationStateAsync.GetAuthenticationStateAsync();
+        Authuser = authstate.User;
+
+
+        if (Authuser.Identity.IsAuthenticated)
+        {
+
+            _Tickets = await TicketsService.GetTickets();
+            _Users = await UsersService.GetUsersIncludeDeleted();
+            StateHasChanged();
+
+        }
+    }
+
+    private async Task OnDelete(Guid id)
+    {
+
+        bool? result = await DialogService.ShowMessageBox(
+    "Warning",
+    "Deleting can not be undone!",
+    yesText: "Delete!", cancelText: "Cancel");
+
+
+
+        if (result == true)
+        {
+
+            await TicketsService.DeleteTicket(id);
+
+            await OnInitializedAsync();
+            StateHasChanged();
+        }
+
+
+
+
+    }
+
+    private async Task OnNotificationClick(Guid id, bool isnotice)
+    {
+        if (isnotice)
+        {
+            await TicketsService.TicketIsNoticed(id, false);
+        }
+        else
+        {
+
+            await TicketsService.TicketIsNoticed(id, true);
+        }
+
+
+        await OnInitializedAsync();
+        StateHasChanged();
+
+    }
+
+    private bool FilterFunc1(WebMud.Models.Tickets element) => FilterFunc(element, searchString1);
+
+    private bool FilterFunc(WebMud.Models.Tickets element, string searchString)
+    {
+
+
+        if (string.IsNullOrWhiteSpace(searchString))
+            return true;
+        if (element.Fname.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (element.Sname.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (element.Email.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (element.Company.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if (element.Phone.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if ($"{element.Fname} {element.Sname} {element.Company} {element.Email} {element.Phone}".Contains(searchString))
+            return true;
+        return false;
+
+    }
+
+    private string Getname(string id)
+    {
+        if (string.IsNullOrEmpty(id) == false)
+        {
+
+            Users val;
+            val = _Users.FirstOrDefault(s => s.Id == new Guid(id));
+
+            if (val is null)
+            {
+                return "";
+            }
+            else
+            {
+                return val.Email;
+
+            }
+
+
+        }
+        return "";
+
+    }
+
+}

@@ -1,0 +1,185 @@
+﻿@page "/User/{Id}"
+@inject WebMud.Data.IUsersService UsersService
+@inject NavigationManager Navigation
+@attribute [Authorize(Roles = "Admin")]
+@using System.Text.RegularExpressions
+@using WebMud.Data
+@using WebMud.Models
+@using System.ComponentModel.DataAnnotations
+
+@if (users is null)
+{
+    <MudItem xs="12" sm="7">
+        <MudProgressCircular Color="Color.Primary" Style="height:70px;width:70px;" Indeterminate="true" />
+    </MudItem>
+}
+else
+{
+    <EditForm Model="@users" OnValidSubmit="OnValidSubmit" OnInvalidSubmit="OnInvalidSubmit">
+        <DataAnnotationsValidator />
+        <MudGrid>
+
+            <MudItem xs="12" sm="7">
+
+                <MudPaper Class="pa-2">
+                    @*          <MudButton Class="ml-n1" Variant="Variant.Filled" Color="Color.Primary" DisableElevation="true" OnClick="@Back">Back</MudButton>*@
+                    <MudIconButton Icon="@Icons.Filled.ArrowBackIosNew" Color="Color.Secondary" OnClick="@Back"></MudIconButton>
+                </MudPaper>
+                <MudCard>
+                    <MudCardContent>
+                        <MudTextField Label="Id" Disabled="true"
+                                      @bind-Value="users.Id" For="@(() => users.Id)" />
+                        <MudTextField Label="First Name" HelperText="Max. 50 characters"
+                                      @bind-Value="users.FName" For="@(() => users.FName)" />
+                        <MudTextField Label="Last Name" HelperText="Max. 50 characters"
+                                      @bind-Value="users.SName" For="@(() => users.FName)" />
+                        <MudTextField Label="Position" HelperText="Your position"
+                                      @bind-Value="users.Position" For="@(() => users.FName)" />
+                        <MudTextField Label="Email" Class="mt-3"
+                                      @bind-Value="users.Email" For="@(() => users.Email)" />
+                        <MudTextField Label="Password" HelperText="Choose a strong password" Class="mt-3"
+                                      @bind-Value="users.Password" For="@(() => users.Password)" InputType="InputType.Password" />
+                        <MudTextField Label="Password" HelperText="Repeat the password" Class="mt-3"
+                                      @bind-Value="users.Password2" For="@(() => users.Password2)" InputType="InputType.Password" />
+                
+                            <MudCheckBox T="bool" Class="ml-n2" Color="Color.Primary" Label="Is Admin" @bind-Checked="users.IsAdmin" For="@(() => users.IsAdmin)" />
+                            <MudCheckBox T="bool" Color="Color.Primary" Class="ml-n2" Label="Verify user" @bind-Checked="users.IsVerified" For="@(() => users.IsVerified)" Disabled="_Disabled" />
+                            <MudCheckBox T="bool" Class="ml-n2" Disabled="true" ReadOnly="true" Label="Is authenticated" @bind-Checked="users.IsAuthenticated" />
+                            @if (AdminSettings.IsEmailVerification)
+                            {
+                                <MudButton Variant="Variant.Text" OnClick="(() => OnResend())" StartIcon="@Icons.Rounded.Email">Resend Authentication</MudButton>
+
+                            }
+                  
+                    </MudCardContent>
+                    <MudCardActions>
+
+
+                        <MudButton Disabled="_processing" ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto">
+                            @if (_processing)
+                            {
+                                <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                                <MudText Class="ms-2">Working</MudText>
+                            }
+                            else
+                            {
+                                <MudText>Confirm</MudText>
+                            }
+                        </MudButton>
+                    </MudCardActions>
+                </MudCard>
+            </MudItem>
+            <MudItem xs="12" sm="5">
+                <MudPaper Class="pa-4 mud-height-full">
+                    <MudText Typo="Typo.subtitle2">Validation Summary</MudText>
+                    @if (success)
+                    {
+                        <MudText Color="Color.Success">Success</MudText>
+                    }
+                    else
+                    {
+                        <MudText Color="@Color.Error">
+                            <ValidationSummary />
+                        </MudText>
+                    }
+                </MudPaper>
+            </MudItem>
+            <MudItem xs="12">
+                <MudText Typo="Typo.body2" Align="Align.Center">
+                    Fill out the form correctly to see the success message.
+                </MudText>
+            </MudItem>
+        </MudGrid>
+    </EditForm>
+}
+@code
+{
+    [Parameter]
+    public string Id { get; set; }
+
+    private Users users { get; set; }
+    bool success = false;
+    private bool _processing = false;
+    private bool _Disabled = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        bool isValid = Guid.TryParse(Id, out Guid result);
+
+
+        if (!string.IsNullOrEmpty(Id) & Id == "0")
+        {
+            users = new Users();
+            _Disabled = true;
+        }
+        else
+        {
+            if (!isValid)
+            {
+
+                Navigation.NavigateTo("/admin/Users");
+
+            }
+            else
+            {
+
+                users = await UsersService.GetUsers(Guid.Parse(Id));
+
+            }
+
+
+        }
+
+
+    }
+
+    private async Task OnResend()
+    {
+        _processing = true;
+        await Task.Delay(1);
+
+        await UsersService.ResendToken(users, Navigation.BaseUri);
+        _processing = false;
+    }
+
+
+    private async Task OnValidSubmit()
+    {
+
+        _processing = true;
+        await Task.Delay(1);
+        if (users.Id == Guid.Empty)
+        {
+
+            await UsersService.AddUsers(users, Navigation.BaseUri);
+            await Task.Delay(5000);
+            success = true;
+            StateHasChanged();
+        }
+        else
+        {
+
+            await UsersService.UpdateUsers(users);
+            await Task.Delay(5000);
+            success = true;
+            StateHasChanged();
+
+        }
+        _processing = false;
+    }
+
+    private void OnInvalidSubmit()
+    {
+
+        success = false;
+    }
+
+    private void Back()
+    {
+
+        Navigation.NavigateTo("/admin/Users");
+
+    }
+
+
+}

@@ -1,0 +1,49 @@
+﻿@inject NavigationManager Navigation
+
+<MudDialog>
+    <DialogContent>
+ 
+        <div class="container" >
+            <div class="row " >
+                <div class="col align-self-start" style="padding:1px" >
+                    <iframe src="@("https://www.facebook.com/plugins/share_button.php?href="+ Url +"&layout=button&size=large&width=77&height=28&appId")" width="77" height="40" style="height:31px ;border:none;overflow:hidden" scrolling="no" frameborder="0" allowfullscreen="true" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"></iframe>
+
+                </div>
+                <div class="col align-self-start"  style="padding:5px" >
+                    <MudButton Href="@("https://www.linkedin.com/cws/share?url=" + Url)"
+                               Target="_blank"
+                               Variant="Variant.Filled"
+                               StartIcon="@Icons.Custom.Brands.LinkedIn"
+                               Color="Color.Info"
+                               Class="ml-n1">
+                        Linkedin
+                    </MudButton>
+                </div>
+                <div class="col align-self-start" style="padding:5px" >
+                    <MudButton Href="@("http://twitter.com/intent/tweet/?url=" + Url)"
+                               Target="_blank"
+                               Variant="Variant.Filled"
+                               StartIcon="@Icons.Custom.Brands.Twitter"
+                               IconColor="Color.Primary"
+                               Color="Color.Default"
+                               Class="ml-n1">
+                        Twitter
+                    </MudButton>
+                </div>
+            </div>
+        </div>
+
+    </DialogContent>
+    <DialogActions>
+
+        <MudButton Color="Color.Default" Variant="Variant.Filled" StartIcon="@Icons.Outlined.ExitToApp" IconColor="Color.Error" OnClick="Submit">OK</MudButton>
+    </DialogActions>
+</MudDialog>
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+
+    [Parameter] public string Url { get; set; }
+
+    void Submit() => MudDialog.Close(DialogResult.Ok(true));
+    void Cancel() => MudDialog.Cancel();
+}

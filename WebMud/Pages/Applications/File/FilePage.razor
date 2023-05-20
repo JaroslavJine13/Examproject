@@ -1,0 +1,148 @@
+﻿@page "/application/folder"
+@inject NavigationManager navigationManager
+@inject AuthenticationStateProvider GetAuthenticationStateAsync
+@inject IFolderService InterestService
+@using WebMud.Data
+@attribute [Authorize(Roles = "Admin, User")]
+
+
+<MudTable Items="@_Interest" Hover="true" Breakpoint="Breakpoint.Sm" Loading="@_loading" LoadingProgressColor="Color.Info" Filter="new Func<WebMud.Models.Folder ,bool>(FilterFunc1)">
+    <ToolBarContent>
+        <MudButton Variant="Variant.Filled" StartIcon="@Icons.Outlined.Add" Link="/application/folder/0" Color="Color.Tertiary">ADD</MudButton>
+        <MudButton Variant="Variant.Filled" Class="ml-3" StartIcon="@Icons.Outlined.Refresh" OnClick="(() => OnInitializedAsync())" Color="Color.Info">Refresh</MudButton>
+        <MudSpacer />
+        <MudTextField @bind-Value="searchString1" Variant="Variant.Text" DisableUnderLine="false" Placeholder="Search" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" IconSize="Size.Medium" Class="mt-0" Clearable="true"></MudTextField>
+    </ToolBarContent>
+    <HeaderContent>
+
+
+        <MudTh>STATUS:</MudTh>
+
+        <MudTh>DATE:</MudTh>
+
+        <MudTh>NAME:</MudTh>
+
+        <MudTh>INTERNAL NOTE:</MudTh>
+
+        <MudTh>EDIT:</MudTh>
+
+        <MudTh>DELETE:</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+
+        <MudTd DataLabel="STATUS:">
+            <MudToggleIconButton Class="mt-3 " @bind-Toggled="@context.IsActive" @onclick="@(e=> OnActivationClick(context.Id, context.IsActive))"
+                                 Icon="@Icons.Filled.ThumbDown" Color="@Color.Error" Title="Off"
+                                 ToggledIcon="@Icons.Outlined.ThumbUp" ToggledColor="@Color.Success" ToggledTitle="On" />
+
+        </MudTd>
+
+        <MudTd DataLabel="DATE">@context.CreatedDate</MudTd>
+
+
+
+        <MudTd DataLabel="HEADER">@context.Name</MudTd>
+
+        <MudTd DataLabel="TITLE">@context.InternalNote</MudTd>
+
+        <MudTd DataLabel="">
+            @{string res = "/application/folder/" + @context.Id;}
+            <MudButton Variant="Variant.Outlined" Link="@res" EndIcon="@Icons.Outlined.Settings" Color="Color.Primary">Edit</MudButton>
+        </MudTd>
+
+        <MudTd DataLabel="">
+            <MudButton EndIcon="@Icons.Material.Filled.Delete" Variant="Variant.Outlined" Color="Color.Error" OnClick="@(e=> OnDelete(context.Id))">Delete</MudButton>
+        </MudTd>
+    </RowTemplate>
+    <PagerContent>
+        <MudTablePager InfoFormat="@($"Center {infoFormat}")" HorizontalAlignment="HorizontalAlignment.Center" HidePageNumber="false" HidePagination="false" HideRowsPerPage="true" />
+    </PagerContent>
+</MudTable>
+
+@code
+{
+
+    [Inject] private IDialogService DialogService { get; set; }
+
+    private bool _loading;
+    private List<WebMud.Models.Folder> _Interest;
+    private System.Security.Claims.ClaimsPrincipal Authuser { get; set; }
+    private string searchString1 = "";
+    private string infoFormat = "{first_item}-{last_item} of {all_items}";
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authstate = await GetAuthenticationStateAsync.GetAuthenticationStateAsync();
+        Authuser = authstate.User;
+
+
+        if (Authuser.Identity.IsAuthenticated)
+        {
+
+            _Interest = await InterestService.GetFolderAll();
+            StateHasChanged();
+
+        }
+    }
+
+    private async Task OnDelete(Guid id)
+    {
+
+        bool? result = await DialogService.ShowMessageBox(
+    "Warning",
+    "Deleting can not be undone!",
+    yesText: "Delete!", cancelText: "Cancel");
+
+
+
+        if (result == true)
+        {
+
+            await InterestService.DeleteFolder(id);
+
+            await OnInitializedAsync();
+            StateHasChanged();
+        }
+
+
+
+
+    }
+
+    private async Task OnActivationClick(Guid id, bool isnotice)
+    {
+        if (isnotice)
+        {
+            await InterestService.ActivateFolder(id, false);
+        }
+        else
+        {
+            await InterestService.ActivateFolder(id, true);
+
+        }
+
+
+        await OnInitializedAsync();
+        StateHasChanged();
+
+    }
+
+    private bool FilterFunc1(WebMud.Models.Folder element) => FilterFunc(element, searchString1);
+
+    private bool FilterFunc(WebMud.Models.Folder element, string searchString)
+    {
+
+
+        if (string.IsNullOrWhiteSpace(searchString))
+            return true;
+        if (element.Name.Contains(searchString, StringComparison.OrdinalIgnoreCase))
+            return true;
+        if ($"{element.Name}".Contains(searchString))
+            return true;
+        return false;
+
+    }
+
+
+
+}

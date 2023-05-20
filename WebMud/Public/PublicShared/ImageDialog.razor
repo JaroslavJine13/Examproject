@@ -1,0 +1,27 @@
+﻿@using WebMud.Data
+@using WebMud.Public.Content
+
+<MudDialog Style="max-width:80%" DisableSidePadding="true">
+    <DialogContent>
+
+        <MudImage Style="max-height:670px" Class="rounded-md" Fluid="true" Src="@ContentText"></MudImage>
+    </DialogContent>
+
+    <DialogActions>
+
+        <MudIconButton Color="Color.Primary" Icon="@Icons.Filled.AspectRatio" Href="@ContentText"></MudIconButton>
+        <MudIconButton Color="Color.Error" Icon="@Icons.Filled.HideImage" OnClick="Submit"></MudIconButton>
+
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+
+
+    [Parameter] public string ContentText { get; set; }
+
+    void Submit() => MudDialog.Close(DialogResult.Ok(true));
+
+}
+

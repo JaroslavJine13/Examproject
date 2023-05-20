@@ -1,0 +1,250 @@
+﻿@page "/application/chatroom/{Id}"
+@inject NavigationManager navigationManager
+@attribute [Authorize(Roles = "Admin, User")]
+@inject WebMud.Data.IUsersService UsersService
+@inject WebMud.Data.IChatService ChatService
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
+@inject IJSRuntime jsRuntime
+@using WebMud.Data
+
+@using System.ComponentModel.DataAnnotations;
+@using Microsoft.AspNetCore.SignalR.Client;
+@using Microsoft.AspNetCore.SignalR;
+@using WebMud.Models
+@inject AuthenticationStateProvider GetAuthenticationStateAsync
+
+<div class="d-flex flex-grow-1 flex-row">
+
+    @if (!_isChatting && users is null)
+    {
+
+        <MudItem xs="12" sm="7">
+            <MudProgressCircular Color="Color.Primary" Style="height:70px;width:70px;" Indeterminate="true" />
+        </MudItem>
+    }
+    else
+    {
+
+        // display messages
+        <MudPaper Class="py-3 flex-grow-1">
+            <MudToolBar Dense="true">
+      
+                <MudIcon Icon="@Icons.Material.Outlined.ChatBubble" Style="margin-right:10px"></MudIcon>
+                <MudText Typo="Typo.h6" Inline="true" Class="mr-2">@_DisplayName</MudText>
+                <MudSpacer />
+                <MudSpacer />
+                <MudMenu Icon="@Icons.Filled.MoreVert">
+                    <MudNavLink Match="NavLinkMatch.Prefix" IconColor="Color.Error" Icon="@Icons.Outlined.DeleteForever" OnClick="OnButtonClicked">Delete all coversation</MudNavLink>
+                </MudMenu>
+            </MudToolBar>
+            <div class="d-flex flex-column px-4" style="max-height: 65vh; min-height: 65vh; overflow: scroll;" id="chatContainer">
+                @foreach (var item in _messages)
+                {
+ 
+
+                    <div style="@item.Aligment">
+                        <UserMessage UserName="@item.Username" Message="@item.Body" ChatUser="@targetuser" Theme="@item.CSS" Mine="@item.Mine" />
+                    </div>
+
+
+                }
+            </div>
+            <MudPaper Class="d-flex flex-row px-2 mx-4" Style="background-color: var(--mud-palette-background-grey);">
+                <MudTextField T="string" Placeholder="Message #chat" DisableUnderLine="true" Class="mt-n2 mx-4" TextUpdateSuppression="false" @bind-Text="_newMessage" @onkeyup="@(() => SendAsync(_newMessage))"></MudTextField>
+                <MudIconButton Icon="@Icons.Filled.Send" Color="Color.Warning" @onclick="@(() => SendAsync(_newMessage))"></MudIconButton>
+            </MudPaper>
+
+        </MudPaper>
+    }
+
+</div>
+
+
+
+@code {
+
+    [Parameter]
+    public string Id { get; set; }
+
+    // flag to indicate chat status
+    private bool _isChatting = true;
+
+    // name of the user who will be chatting
+    private string _username;
+
+    private string _targetusername;
+
+    private string _DisplayName;
+
+    // on-screen message
+    private string _message;
+
+    // new message input
+    private string? _newMessage { get; set; }
+
+    // list of messages in chat
+    public List<Message> _messages = new List<Message>();
+
+    private string _hubUrl;
+    private HubConnection _hubConnection;
+
+    private System.Security.Claims.ClaimsPrincipal Authuser { get; set; }
+
+    private Users users { get; set; }
+    private Users targetuser { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authstate = await GetAuthenticationStateAsync.GetAuthenticationStateAsync();
+        Authuser = authstate.User;
+
+        bool isValid = Guid.TryParse(Id, out Guid result);
+        if (Authuser.Identity.IsAuthenticated && isValid)
+        {
+            users = await UsersService.GetUsers(new Guid(authstate.User.Claims.First().Value));
+            targetuser = await UsersService.GetUsers(new Guid(Id));
+            if (targetuser == null)
+            {
+                Navigation.NavigateTo("/");
+
+            }
+            else
+            {
+
+                _username = users.Email;
+                _targetusername = targetuser.Email;
+                _DisplayName = String.Concat(targetuser.FName, " ", targetuser.SName);
+                await Task.Delay(1);
+
+                await Chat();
+
+                await ChatService.ChangeNotice(Id, authstate.User.Claims.First().Value);
+                _newMessage = "";
+                StateHasChanged();
+
+            }
+
+        }
+        else
+        {
+            Navigation.NavigateTo("/");
+        }
+
+
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+
+        if (_isChatting)
+        {
+            await jsRuntime.InvokeAsync<string>("ScrollToBottom", "chatContainer");
+
+        }
+
+    }
+
+    private async void OnButtonClicked()
+    {
+
+        bool? result = await DialogService.ShowMessageBox(
+            "Warning",
+            "Deleting can not be undone!",
+            yesText: "Delete!", cancelText: "Cancel");
+        if (result == true)
+        {
+
+            await ChatService.ClearMessage(Authuser.Claims.First().Value, Id);
+            Navigation.NavigateTo(Navigation.Uri, forceLoad: true);
+        }
+        StateHasChanged();
+    }
+
+    public async Task Chat()
+    {
+
+
+        try
+        {
+
+            _isChatting = true;
+            await Task.Delay(1);
+
+            string baseUrl = navigationManager.BaseUri;
+
+            _hubUrl = baseUrl.TrimEnd('/') + BlazorChat.HubUrl;
+
+            _hubConnection = new HubConnectionBuilder()
+                .WithUrl(_hubUrl)
+                .Build();
+
+            _hubConnection.On<Message>("SendPrivateMessage", BroadcastMessage);
+
+
+            //měl bych to uzavřít
+            await _hubConnection.StartAsync();
+
+            await _hubConnection.SendAsync("JoinGroup", Authuser.Claims.First().Value, Authuser.Claims.First().Value);
+
+            var chatlist = await ChatService.GetMessage(Authuser.Claims.First().Value, Id);
+
+            foreach (var x in chatlist.OrderBy(x => x.CreatedDate).ToList())
+            {
+                bool isMine = x.Username.Equals(_username, StringComparison.OrdinalIgnoreCase);
+                x.Mine = isMine;
+                x.IsAligment = isMine;
+                _messages.Add(x);
+
+            }
+
+        }
+        catch (Exception e)
+        {
+            _message = $"ERROR: Failed to start chat client: {e.Message}";
+            _isChatting = false;
+        }
+    }
+
+    private async Task BroadcastMessage(Message message)
+    {
+        bool isMine = message.Username.Equals(_username, StringComparison.OrdinalIgnoreCase);
+        message.Mine = isMine;
+        message.IsAligment = isMine;
+
+        if ((message.ToUserId == Id && message.FromUserId == Authuser.Claims.First().Value) || (message.ToUserId == Authuser.Claims.First().Value && message.FromUserId == Id))
+        {
+            _messages.Add(message);
+        }
+
+        // Inform blazor the UI needs updating
+
+        StateHasChanged();
+        //await OnInitializedAsync();
+    }
+
+    private async Task SendAsync(string message)
+    {
+        if (!string.IsNullOrWhiteSpace(message))
+        {
+
+            Message msg = new Message();
+            msg.Username = _username;
+            msg.Body = message;
+            msg.Mine = true;
+            msg.FromUserId = Authuser.Claims.First().Value;
+            msg.ToUserId = Id;
+            msg.IsAligment = true;
+            msg.CreatedDate = DateTime.Now;
+            msg.IsNotice = false;
+            await _hubConnection.SendAsync("SendPrivateMessage", msg);
+            await _hubConnection.SendAsync("Notification", msg);
+            Task.Delay(1);
+            _newMessage = string.Empty;
+            StateHasChanged();
+        }
+    }
+
+
+}

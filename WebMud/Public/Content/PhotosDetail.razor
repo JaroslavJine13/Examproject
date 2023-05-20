@@ -1,0 +1,170 @@
+﻿@page "/photos/{Id}"
+
+@attribute [AllowAnonymous]
+@inject NavigationManager Navigation
+@layout WelcomePage
+@inject IGalleryService GalleryService
+
+@inject IFolderService FolderService
+@using WebMud.Models
+@using WebMud.Data
+
+@using WebMud.Public.PublicShared
+@inject IDialogService DialogService
+
+
+@if (AdminSettings.IsGalleryPublished)
+{
+
+
+@if ((_GalleryView != null && _GalleryView.Any()) || (_Folder != null))
+{
+
+    <PageTitle>@(AdminSettings.Title + " " + _Folder.Name ) </PageTitle>
+    <HeadContent>
+
+        <meta property="og:url" content="@Navigation.Uri" />
+        <meta property="og:type" content="website" />
+        <meta property="og:title" content="@(AdminSettings.Title + " " + _Folder.Name )" />
+        <meta property="og:description" content="@_Folder.Note" />
+
+        @if (_GalleryView.FirstOrDefault() != null)
+        {
+
+
+
+            <meta property="og:image" content="@(new Uri(new Uri(Navigation.BaseUri), _GalleryView.FirstOrDefault().Path).ToString())" />
+        }
+
+
+
+    </HeadContent>
+}
+
+
+
+<MudContainer MaxWidth="MaxWidth.Large">
+
+    <div class="d-flex flex-column align-center  mt-15">
+
+        <MudIconButton Icon="@Icons.Material.Outlined.ArrowCircleLeft" Size="Size.Large" Href="photos"></MudIconButton>
+    </div>
+    @if (_GalleryView is null)
+    {
+
+
+
+
+    }
+    else
+    {
+        <MudGrid>
+
+
+            @foreach (var item in _GalleryView)
+            {
+
+
+
+                <MudItem xs="12" sm="6" md="3" Class="fade" @key="item.Id">
+
+                    <MudCard Elevation="12" Class="rounded-lg pb-3 card ">
+                        <MudCardMedia @onclick="@(() => OpenImgDialog(item.Path))" Image="@item.Path" loading="lazy" Style="image-rendering: optimizeSpeed; max-height: 260px; max-width: 100%; " />
+
+                        <div class="d-flex">
+                            <MudIconButton OnClick="@(() => OpenImgDialog(item.Path))" Icon="@Icons.Material.Filled.Fullscreen" Color="Color.Default" />
+                            <MudText Align="Align.Center" Class="align-self-center" Typo="Typo.subtitle1">@item.Note</MudText>
+                        </div>
+                    </MudCard>
+
+                </MudItem>
+
+            }
+
+
+        </MudGrid>
+
+
+
+        <div class="d-flex flex-column align-center mt-10 mb-15">
+            <MudPagination Color="Color.Primary" Class="mb-16" BoundaryCount="1" MiddleCount="2" Count="Convert.ToInt32(Math.Ceiling(_Gallery.Count() / Convert.ToDecimal(pageSize)))" SelectedChanged="(e=>HandleChangePage(e))" Selected="pageNumber" />
+        </div>
+
+    }
+
+</MudContainer>
+}
+
+
+
+
+@code {
+
+
+
+    [Parameter]
+    public string Id { get; set; }
+
+    private int pageSize = 8;
+    private int pageNumber = 1;
+
+
+    public List<Gallery> _Gallery { get; set; }
+    public List<Gallery> _GalleryView { get; set; }
+
+    public Folder _Folder;
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        bool isValid = Guid.TryParse(Id, out Guid result);
+        if (!string.IsNullOrEmpty(Id) & Id == "0")
+        {
+            isValid = true;
+        }
+
+        if (isValid)
+        {
+
+
+            if (!string.IsNullOrEmpty(Id) & Id == "0")
+            {
+                _Gallery = await GalleryService.GetGalleryOnlyActiveAll();
+            }
+            else
+            {
+                _Gallery = await GalleryService.GetGalleryOnlyActiveAll(new Guid(Id));
+                _Folder = await FolderService.GetFolder(new Guid(Id));
+            }
+
+
+
+            _GalleryView = _Gallery.Skip((0) * pageSize).Take(pageSize).ToList();
+
+        }
+        else
+        {
+
+            Navigation.NavigateTo("/");
+        }
+
+
+        //StateHasChanged();
+
+    }
+
+    private void OpenImgDialog(string txt)
+    {
+        var parameters = new DialogParameters();
+        parameters.Add("ContentText", txt);
+        DialogService.Show<ImageDialog>("", parameters);
+    }
+
+
+    void HandleChangePage(int p)
+    {
+        pageNumber = p;
+        _GalleryView = _Gallery.Skip((p - 1) * pageSize).Take(pageSize).ToList();
+        StateHasChanged();
+    }
+}

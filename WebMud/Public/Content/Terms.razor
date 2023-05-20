@@ -1,0 +1,61 @@
+﻿@page "/terms"
+@attribute [AllowAnonymous]
+@inject NavigationManager Navigation
+@layout WelcomePage
+@using WebMud.Models
+@using System.Globalization
+
+
+ 
+    <MudContainer MaxWidth="MaxWidth.Medium" Fixed="false">
+
+
+
+
+
+
+
+        <MudContainer Fixed="true" MaxWidth="MaxWidth.Medium">
+
+            <MudPaper Elevation="20" Class="px-5" Style="margin-top:180px">
+                <MudGrid>
+                    <MudItem xs="12" sm="12">
+
+
+
+                            @((MarkupString)_GDPR)
+                    </MudItem>
+
+                </MudGrid>
+
+            </MudPaper>
+        </MudContainer>
+
+
+
+    </MudContainer>
+ 
+
+ 
+
+
+ 
+
+
+@code {
+
+    private string _GDPR { get; set; }
+
+    protected override void OnInitialized()
+    {
+
+
+            _GDPR = AdminSettings.GDPR;
+
+
+    }
+
+
+
+
+}

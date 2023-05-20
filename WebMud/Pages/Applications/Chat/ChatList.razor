@@ -1,0 +1,222 @@
+﻿@page "/application/chatroom"
+@using WebMud.Data
+@inject WebMud.Data.IUsersService UsersService
+@inject NavigationManager Navigation
+@inject AuthenticationStateProvider GetAuthenticationStateAsync
+@attribute [Authorize(Roles = "Admin, User")]
+@inject WebMud.Data.IChatService ChatService
+@using System.Linq
+@using Microsoft.AspNetCore.SignalR.Client;
+@using WebMud.Models
+
+
+
+<MudText Typo="Typo.h5" Color="Color.Primary" Class="mb-4">Chat</MudText>
+
+@if (Users is null && NoticeList is null)
+{
+    <MudItem xs="12" sm="7">
+        <MudProgressCircular Color="Color.Primary" Style="height:70px;width:70px;" Indeterminate="true" />
+    </MudItem>
+
+}
+else
+{
+
+
+    <MudPaper Elevation="25" Class="pa-3 " MinWidth="350px">
+        <MudItem xs="12" sm="6" md="4">
+        </MudItem>
+        <div class="d-flex flex-column px-4" style="max-height:70vh;min-height:70vh; overflow:scroll;">
+            <MudList Clickable="true">
+                <MudInput T="string" @bind-Value="value1" Immediate="true" TextChanged="@(() => Search(value1))" Placeholder="Search current user..." Variant="Variant.Outlined" Adornment="Adornment.Start" AdornmentIcon="@Icons.Filled.Search" AdornmentColor="Color.Secondary" Class="d-flex" Clearable />
+                <br />
+                @foreach (var user in Search(value1).ToList())
+                {
+                    bool visible = false;
+                    if (user.MessageCount != 0)
+                    {
+                        visible = true;
+
+                    }
+                    else
+                    {
+                        visible = false;
+
+                    }
+                    <div class="d-flex gap-1">
+                        <MudListItem Class="pa-0 px-2" OnClick="@(() => LoadUserChat(user.Id.ToString()))">
+                            <div class="d-flex flex-row mt-n1 mb-n1">
+                                <div class="mr-4">
+                                    <MudBadge Icon="@Icons.Filled.Chat" Overlap="true" Class="mx-4 my-2" Visible="@visible" Color="Color.Error">
+                                        @if (user.Id.ToString() == Authuser.Claims.First().Value)
+                                        {
+
+
+                                            @if (!String.IsNullOrEmpty(user.AvatarPath))
+                                            {
+                                                <MudAvatar Image="@user.AvatarPath" Style="height:50px; width:50px;" />
+                                            }
+                                            else
+                                            {
+                                                <MudAvatar Color="Color.Secondary" Style="height:50px; width:50px;">
+                                                    @user.FName.ToUpper().FirstOrDefault()@user.SName.ToUpper().FirstOrDefault()
+                                                </MudAvatar>
+                                            }
+
+
+
+                                        }
+                                        else
+                                        {
+
+
+                                            @if (!String.IsNullOrEmpty(user.AvatarPath))
+                                            {
+                                                <MudAvatar Image="@user.AvatarPath" Style="height:50px; width:50px;" />
+                                            }
+                                            else
+                                            {
+                                                <MudAvatar Color="Color.Dark" Style="height:50px; width:50px;">
+                                                    @user.FName.ToUpper().FirstOrDefault()@user.SName.ToUpper().FirstOrDefault()
+                                                </MudAvatar>
+                                            }
+
+
+                                        }
+                                    </MudBadge>
+                                </div>
+                                <div>
+
+                                    <MudText Typo="Typo.body2" Class="mt-3 mb-n2">@(user.FName + " " + user.SName)</MudText>
+                                    <MudText Typo="Typo.caption" Style="font-size: xx-small!important;">@user.Position </MudText>
+                                </div>
+                                <MudSpacer></MudSpacer>
+
+
+
+                            </div>
+                        </MudListItem>
+                        @if (!user.IsCustomer)
+                        {
+                            <div class="align-self-center">
+                                <MudSwitch T="bool" Checked="@user.IsChatAvailable" CheckedChanged="@(e=>  OnActivationClick( user.Id,user.IsChatAvailable))" Label="Live" UnCheckedColor="Color.Error" Color="Color.Success" />
+                            </div>
+                        }
+                    </div>
+                }
+            </MudList>
+        </div>
+    </MudPaper>
+
+}
+
+@code
+{
+    private bool _hidePosition;
+    private bool _loading;
+    private List<UsersNotified> Users;
+
+    private string searchString1 = "";
+    private Users selectedItem1 = null;
+    private HashSet<UsersNotified> selectedItems = new HashSet<UsersNotified>();
+
+    private System.Security.Claims.ClaimsPrincipal Authuser { get; set; }
+
+    private string value1;
+
+    private bool _NewChat { get; set; }
+    private List<Message> NoticeList;
+
+
+    private HubConnection hubConnection;
+    public bool IsConnected => hubConnection.State == HubConnectionState.Connected;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authstate = await GetAuthenticationStateAsync.GetAuthenticationStateAsync();
+        Authuser = authstate.User;
+
+
+        if (Authuser.Identity.IsAuthenticated)
+        {
+
+
+            Users = await UsersService.GetChatUsersAll(Authuser.Claims.First().Value);
+
+
+            string baseUrl = Navigation.BaseUri;
+            string hubUrl = baseUrl.TrimEnd('/') + BlazorChat.HubUrl;
+
+            hubConnection = new HubConnectionBuilder()
+                .WithUrl(hubUrl)
+                .Build();
+            await hubConnection.StartAsync();
+            hubConnection.On<Message>("Notification", BroadcastMessage);
+
+            StateHasChanged();
+
+        }
+    }
+
+    private async void BroadcastMessage(Message message)
+    {
+
+
+        if (Authuser.Claims.First().Value == message.ToUserId)
+        {
+
+            Users = await UsersService.GetChatUsersAll(Authuser.Claims.First().Value);
+            StateHasChanged();
+        }
+
+
+    }
+
+    async Task LoadUserChat(string userId)
+    {
+
+        Navigation.NavigateTo($"/application/chatroom/{userId}");
+
+    }
+
+
+
+
+
+    public List<UsersNotified> Search(string value)
+    {
+        //value1 = string.Empty;
+        if (string.IsNullOrEmpty(value))
+        {
+
+
+
+            return Users;
+
+        }
+
+
+        return Users.FindAll(x => x.Email.ToLower().Contains(value.ToLower()) || x.Position.ToLower().Contains(value.ToLower()) || x.FName.ToLower().Contains(value.ToLower()) || x.SName.ToLower().Contains(value.ToLower())).ToList();
+    }
+
+
+    private async Task OnActivationClick(Guid id, bool isnotice)
+    {
+        if (isnotice)
+        {
+            await UsersService.UpdatePublicChatVisibility(false, id);
+        }
+        else
+        {
+            await UsersService.UpdatePublicChatVisibility(true, id);
+
+        }
+
+
+        await OnInitializedAsync();
+        StateHasChanged();
+
+    }
+
+}

@@ -1,0 +1,488 @@
+﻿@page "/personal/dashboard"
+@inject NavigationManager Navigation
+@inject AuthenticationStateProvider GetAuthenticationStateAsync
+@inject WebMud.Data.IUsersService UsersService
+@inject IJSRuntime JS
+@inject IVisitorsStatisticsService VisitorsStatisticsService
+@inject ITicketsService TicketsService
+@inject ISnackbar SnackbarService
+@using WebMud.Data
+@using WebMud.Models
+@attribute [Authorize(Roles = "Admin, User")]
+
+<MudText Typo="Typo.h5" Color="Color.Primary" Class="mb-4">Dashboard</MudText>
+<MudGrid>
+    <MudItem xs="12" sm="6" md="4">
+        <MudPaper Class="d-flex flex-row pt-6 pb-4 rounded-lg" Style="height:100px;" Elevation="2">
+            <MudIcon Icon="@Icons.Material.Filled.Numbers" Color="Color.Primary" Class="mx-4" Style="width:54px; height:54px;"></MudIcon>
+            <div>
+
+
+
+                <MudText Typo="Typo.subtitle1" Class="mud-text-secondary mb-n1">My total traffic</MudText>
+                <MudText Typo="Typo.h5">@_trafficCounter</MudText>
+            </div>
+        </MudPaper>
+    </MudItem>
+
+    <MudItem xs="12" sm="6" md="4">
+        <MudPaper Class="d-flex flex-row pt-6 pb-4 rounded-lg" Style="height:100px;" Elevation="2">
+            <MudIcon Icon="@Icons.Material.Filled.AccountBalance" Color="Color.Secondary" Class="mx-4" Style="width:54px; height:54px;"></MudIcon>
+            <div>
+
+
+
+                <MudText Typo="Typo.subtitle1" Class="mud-text-secondary mb-n1">Total num. of Contacts</MudText>
+                <MudText Typo="Typo.h5">@_NumberOfTickets</MudText>
+            </div>
+        </MudPaper>
+    </MudItem>
+
+
+    <MudItem xs="12" sm="6" md="4">
+        <MudPaper Class="d-flex flex-row pt-6 pb-4 rounded-lg" Style="height:100px;" Elevation="2">
+            <MudIcon Icon="@Icons.Material.Filled.People" Color="Color.Success" Class="mx-4" Style="width:54px; height:54px;"></MudIcon>
+            <div>
+
+
+
+                <MudText Typo="Typo.subtitle1" Class="mud-text-secondary mb-n1">Total num. of visitors</MudText>
+                <MudText Typo="Typo.h5">@_NumberOfVisitors</MudText>
+            </div>
+        </MudPaper>
+    </MudItem>
+
+    <MudItem xs="12" sm="6" md="4">
+        <MudPaper Class="d-flex flex-row pt-6 pb-4 rounded-lg" Style="height:100px;" Elevation="2">
+            <MudIcon Icon="@Icons.Filled.Today" Color="Color.Warning" Class="mx-4" Style="width:54px; height:54px;"></MudIcon>
+            <div>
+
+
+
+                <MudText Typo="Typo.subtitle1" Class="mud-text-secondary mb-n1">Visitors today</MudText>
+                <MudText Typo="Typo.h5">@_NumberOfVisitorsToday</MudText>
+            </div>
+        </MudPaper>
+    </MudItem>
+
+
+    <MudItem xs="12" sm="6" md="4">
+        <MudPaper Class="d-flex flex-row pt-6 pb-4 rounded-lg" Style="height:100px;" Elevation="2">
+            <MudIcon Icon="@Icons.Filled.ChatBubble" Color="Color.Error" Class="mx-4" Style="width:54px; height:54px;"></MudIcon>
+            <div>
+
+
+
+                <MudText Typo="Typo.subtitle1" Class="mud-text-secondary mb-n1">Unreaded Chat</MudText>
+                <MudText Typo="Typo.h5">@_NumberOfUnreadedMessages</MudText>
+            </div>
+        </MudPaper>
+    </MudItem>
+
+
+    <MudItem xs="12" sm="6" md="4">
+        <MudPaper Class="d-flex flex-row pt-6 pb-4 rounded-lg" Style="height:100px;" Elevation="2">
+            <MudIcon Icon="@Icons.Filled.Email" Color="Color.Info" Class="mx-4" Style="width:54px; height:54px;"></MudIcon>
+            <div>
+
+
+
+                <MudText Typo="Typo.subtitle1" Class="mud-text-secondary mb-n1">Unreaded Contacts</MudText>
+                <MudText Typo="Typo.h5">@_NumberOfRecentTickets</MudText>
+            </div>
+        </MudPaper>
+    </MudItem>
+
+
+
+    @if (UserNotified != null)
+    {
+        <MudItem xs="12" sm="12" md="6">
+            <MudCard Elevation="2" Style="height:100%;">
+                <MudCardHeader>
+                    <CardHeaderContent>
+                        <MudText Class="mud-text-secondary mb-n1" Typo="Typo.subtitle1">Top three recent chat:</MudText>
+                    </CardHeaderContent>
+                </MudCardHeader>
+                <MudCardContent Class="px-0">
+                    <MudList Clickable="true">
+                        @if (UserNotified.Count != 0)
+                        {
+                            @foreach (var user in UserNotified)
+                            {
+
+
+
+
+                                <MudListItem OnClick="@(() => LoadUserChat(user.Id.ToString()))">
+                                    <div class="d-flex flex-row">
+                                        <MudAvatar Class="mud-elevation-25">
+                                            <MudAvatar Image="@user.AvatarPath" Class="mx-4" />
+                                        </MudAvatar>
+                                        <div class="ml-6 overflow-x-hidden">
+                                            <MudText Typo="Typo.subtitle2">@(user.SName + " " + user.FName) </MudText>
+                                            <MudText Typo="Typo.body2">@user.LastMessage</MudText>
+                                        </div>
+                                        <MudChip Label="true" Color="Color.Error" Size="Size.Small" Icon="@Icons.Filled.Reply" Class="ml-auto mud-elevation-25">Reply</MudChip>
+                                    </div>
+                                </MudListItem>
+                            }
+                        }
+                        else
+                        {
+                            <MudListItem OnClick="@(() => LoadChatRoom())">
+
+                                <MudIcon Icon="@Icons.Filled.NotificationsOff" Style="font-size: 4rem;" />
+                                <div class="ml-1 d-flex">
+                                    <MudText Typo="Typo.subtitle2">No recent unreaded messages...</MudText>
+                                </div>
+                            </MudListItem>
+
+                        }
+
+
+                    </MudList>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+
+    }
+    else
+    {
+        <MudItem xs="12" sm="12" md="6">
+            <MudCard Elevation="2" Style="height:100%;">
+                <MudCardHeader>
+                    <CardHeaderContent>
+                        <MudText Class="mud-text-secondary mb-n1" Typo="Typo.subtitle1">Top three recent chat:</MudText>
+                    </CardHeaderContent>
+                </MudCardHeader>
+                <MudCardContent Class="px-0">
+                    <MudList Clickable="true">
+                        <MudListItem>
+
+                            <MudSkeleton SkeletonType="SkeletonType.Circle" Width="50px" Height="50px" />
+
+                            <MudSkeleton />
+                            <MudSkeleton SkeletonType="SkeletonType.Rectangle" />
+                        </MudListItem>
+                        <MudListItem>
+
+                            <MudSkeleton SkeletonType="SkeletonType.Circle" Width="50px" Height="50px" />
+
+                            <MudSkeleton />
+                            <MudSkeleton SkeletonType="SkeletonType.Rectangle" />
+                        </MudListItem>
+                    </MudList>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+
+    }
+
+
+    @if (TickedNotified != null)
+    {
+        <MudItem xs="12" sm="12" md="6">
+            <MudCard Elevation="2" Style="height:100%;">
+                <MudCardHeader>
+                    <CardHeaderContent>
+                        <MudText Class="mud-text-secondary mb-n1" Typo="Typo.subtitle1">Top three recent tickets:</MudText>
+                    </CardHeaderContent>
+                </MudCardHeader>
+                <MudCardContent Class="px-0">
+                    <MudList Clickable="true">
+                        @if (TickedNotified.Count != 0)
+                        {
+                            @foreach (var ticket in TickedNotified)
+                            {
+
+
+
+
+                                <MudListItem OnClick="@(() => LoadTicket(ticket.Id.ToString()))">
+                                    <div class="d-flex flex-row">
+
+                                        <div class="ml-6 overflow-x-hidden ">
+                                            <MudText Typo="Typo.subtitle2">@ticket.CreatedDate</MudText>
+                                            <MudText Typo="Typo.h5">@ticket.Email</MudText>
+                                        </div>
+                                        <MudChip Label="true" Color="Color.Warning" Size="Size.Small" Icon="@Icons.Filled.RemoveRedEye" Class="ml-auto mud-elevation-25">View</MudChip>
+                                    </div>
+                                </MudListItem>
+                            }
+                        }
+                        else
+                        {
+                            <MudListItem OnClick="@(() => LoadTicketRoom())">
+
+                                <MudIcon Icon="@Icons.Filled.NotificationsOff" Style="font-size: 4rem;" />
+                                <div class="ml-1 d-flex">
+                                    <MudText Typo="Typo.subtitle2">No recent unreaded Tickets...</MudText>
+                                </div>
+                            </MudListItem>
+
+                        }
+
+
+                    </MudList>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+
+    }
+    else
+    {
+        <MudItem xs="12" sm="12" md="6">
+            <MudCard Elevation="2" Style="height:100%;">
+                <MudCardHeader>
+                    <CardHeaderContent>
+                        <MudText Class="mud-text-secondary mb-n1" Typo="Typo.subtitle1">Top three recent tickets:</MudText>
+                    </CardHeaderContent>
+                </MudCardHeader>
+                <MudCardContent Class="px-0">
+                    <MudList Clickable="true">
+                        <MudListItem>
+
+                            <MudSkeleton SkeletonType="SkeletonType.Circle" Width="50px" Height="50px" />
+
+                            <MudSkeleton />
+                            <MudSkeleton SkeletonType="SkeletonType.Rectangle" />
+                        </MudListItem>
+                        <MudListItem>
+
+                            <MudSkeleton SkeletonType="SkeletonType.Circle" Width="50px" Height="50px" />
+
+                            <MudSkeleton />
+                            <MudSkeleton SkeletonType="SkeletonType.Rectangle" />
+                        </MudListItem>
+                    </MudList>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+
+    }
+    @if (XAxisLabels != null)
+    {
+        <MudItem xs="12" sm="12" md="12">
+
+            <MudHidden Breakpoint="Breakpoint.SmAndDown">
+
+                <MudPaper Elevation="2">
+                    <div class="justify-center">
+                        <MudItem md="6" >
+                            <div class="d-flex gap-2 px-2 py-2  ">
+                                <MudIconButton Color="Color.Primary" OnClick="(() => Refresh())" Icon="@Icons.Outlined.Refresh"></MudIconButton>
+                                <MudDateRangePicker Margin="Margin.Dense" Variant="Variant.Outlined" PickerMonthChanged="(() => Refresh())" Label="Range" Editable="true" @bind-DateRange="_dateRange" />
+                            </div>
+                        </MudItem>
+                    </div>
+                    <div Class="justify-center">
+                        <MudChart Class="justify-self-center" ChartOptions="@_options" ChartType="ChartType.Bar" ChartSeries="@Series" @bind-SelectedIndex="LIndex" XAxisLabels="@XAxisLabels" Height="490px" Width="100%"></MudChart>
+
+                    </div>
+
+
+                </MudPaper>
+
+            </MudHidden>
+ 
+
+        </MudItem>
+    }
+    @if (XAxisLabels != null)
+    {
+
+        <MudItem xs="12" sm="12" md="12">
+ 
+            <MudHidden Breakpoint="Breakpoint.SmAndDown" Invert="true">
+
+                <MudPaper Elevation="2">
+                    <div class="d-flex gap-1 px-1 py-1">
+                        <MudDateRangePicker Margin="Margin.Dense" Variant="Variant.Outlined" PickerMonthChanged="(() => Refresh())" Label="Range" Editable="true" @bind-DateRange="_dateRange" />
+                        <MudIconButton Color="Color.Primary" OnClick="(() => Refresh())" Icon="@Icons.Outlined.Refresh"></MudIconButton>
+                    </div>
+
+                    <MudChart Class="justify-self-center" ChartOptions="@_options" ChartType="ChartType.Bar" ChartSeries="@Series" @bind-SelectedIndex="LIndex" XAxisLabels="@XAxisLabels"   Width="100%"></MudChart>
+
+
+
+
+                </MudPaper>
+
+            </MudHidden>
+
+        </MudItem>
+    }
+
+
+
+
+</MudGrid>
+
+@code {
+
+    private System.Security.Claims.ClaimsPrincipal Authuser { get; set; }
+    private Users Users;
+    private List<UsersNotified> UserNotified;
+    private List<Tickets> TickedNotified;
+
+    private int _trafficCounter { get; set; }
+    private int _NumberOfVisitors { get; set; }
+    private int _NumberOfVisitorsToday { get; set; }
+    private int _NumberOfTickets { get; set; }
+
+    private int _NumberOfUnreadedMessages { get; set; }
+    private int _NumberOfRecentTickets { get; set; }
+
+
+
+    int nn { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authstate = await GetAuthenticationStateAsync.GetAuthenticationStateAsync();
+        Authuser = authstate.User;
+
+
+        if (Authuser.Identity.IsAuthenticated)
+        {
+            var result = await UsersService.GetUsers(Authuser.Identity.Name);
+            Users = result;
+
+
+
+            _options.YAxisTicks = 1;
+            _options.XAxisLines = false;
+
+            await Refresh();
+
+            StateHasChanged();
+        }
+
+
+
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+
+        if (firstRender)
+        {
+
+
+
+            _NumberOfVisitors = await VisitorsStatisticsService.NumberOfVisitors();
+            _NumberOfVisitorsToday = await VisitorsStatisticsService.NumberOfVisitorsToday();
+            _trafficCounter = Users.TrafficCount;
+
+            UserNotified = await UsersService.GetChatUsers(Authuser.Claims.First().Value);
+            _NumberOfTickets = await TicketsService.TicketTotalCount();
+            TickedNotified = await TicketsService.GetDashboardTickets();
+
+            _NumberOfUnreadedMessages = UserNotified.Count;
+            _NumberOfRecentTickets = TickedNotified.Count;
+
+
+
+
+
+            StateHasChanged();
+        }
+    }
+
+    async Task LoadUserChat(string userId)
+    {
+
+        Navigation.NavigateTo($"/application/chatroom/{userId}");
+
+    }
+
+    async Task LoadChatRoom()
+    {
+
+        Navigation.NavigateTo("/application/chatroom");
+
+    }
+
+    async Task LoadTicket(string ticketid)
+    {
+
+        Navigation.NavigateTo($"/application/tickets/{ticketid}");
+
+    }
+
+    async Task LoadTicketRoom()
+    {
+
+        Navigation.NavigateTo($"/application/tickets");
+
+    }
+
+    //Chart-------------
+
+    private readonly ChartOptions _options = new();
+
+
+    private int LIndex = -1; //default value cannot be 0 -> first selectedindex is 0.
+    public List<ChartSeries> Series = new List<ChartSeries>();
+    public string[] XAxisLabels;
+
+    private DateRange _dateRange = new DateRange(DateTime.Now.AddDays(-5).Date, DateTime.Now.AddDays(5).Date);
+
+
+    public List<string> GetDatesBetween(DateTime startDate, DateTime endDate)
+    {
+
+
+        List<string> allDates = new List<string>();
+        for (DateTime date = startDate; date <= endDate; date = date.AddDays(1))
+            allDates.Add(date.ToString("dd"));
+
+
+
+        return allDates;
+
+    }
+
+
+    private async Task FillLineChart()
+    {
+        Series.Clear();
+
+        if (_dateRange.End != null || _dateRange.Start != null)
+        {
+        
+            XAxisLabels = GetDatesBetween(_dateRange.Start.Value, _dateRange.End.Value).ToArray<string>();
+
+
+
+            List<double> arr = await VisitorsStatisticsService.GetArrayOfVisitsPerRange(_dateRange);
+
+            Series.Add(new ChartSeries() { Data = arr.ToArray(), Name = "Users who wisit your web" });
+
+
+
+
+        }
+        else
+        {
+
+            SnackbarService.Add("Pick a date!", Severity.Error);
+
+        }
+
+
+
+    }
+
+    private async Task Refresh()
+    {
+
+        await FillLineChart();
+
+
+        StateHasChanged();
+
+    }
+
+}

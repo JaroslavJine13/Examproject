@@ -1,0 +1,54 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+	  <TargetFramework>net6.0</TargetFramework>
+	  <Nullable>enable</Nullable>
+	  <ImplicitUsings>enable</ImplicitUsings>
+	  <LangVersion>preview</LangVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Remove="Shared\PersonCard.razor" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Remove="Shared\Welcome.en.resx" />
+    <EmbeddedResource Remove="Shared\Welcome.resx" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Pages\Personal\PersonCard.razor" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Blazor-Analytics" Version="3.11.0" />
+    <PackageReference Include="Blazored.TextEditor" Version="1.0.8" />
+    <PackageReference Include="Dapper" Version="2.0.123" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication" Version="2.2.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.Cookies" Version="2.2.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.Core" Version="2.2.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Authorization" Version="6.0.14" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity" Version="2.2.0" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="6.0.14" />
+    <PackageReference Include="Microsoft.Extensions.Identity.Core" Version="6.0.14" />
+    <PackageReference Include="Microsoft.Extensions.Localization" Version="6.0.14" />
+    <PackageReference Include="MudBlazor" Version="6.2.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
+    <PackageReference Include="System.Data.SqlClient" Version="4.8.5" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="wwwroot\avatars\" />
+    <Folder Include="wwwroot\images\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Pages\Applications\Email\TicketDetail.razor" />
+    <None Include="Pages\Applications\Email\TicketsPage.razor" />
+    <None Include="Pages\Applications\File\FileDetail.razor" />
+    <None Include="Pages\Applications\File\FilePage.razor" />
+    <None Include="Pages\Applications\Gallery\GalleryDetail.razor" />
+    <None Include="Pages\Applications\Gallery\GalleryPage.razor" />
+  </ItemGroup>
+
+</Project>

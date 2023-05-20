@@ -1,0 +1,77 @@
+﻿@attribute [Authorize(Roles = "Admin, User")]
+@using WebMud.Pages.Personal
+@inject WebMud.Data.IUsersService UsersService
+@inject AuthenticationStateProvider GetAuthenticationStateAsync
+@using WebMud.Data
+@using WebMud.Models
+
+<PersonCard Style="background-color: var(--mud-palette-drawer-background);color: var(--mud-palette-drawer-text);" />
+@*<MudDivider Class=" " />*@
+<MudNavMenu Color="Color.Primary" Bordered="true">
+    <AuthorizeView Roles="Admin,User">
+
+
+        <MudNavGroup Title="Personal" Icon="@Icons.Filled.ManageAccounts" Expanded="true">
+            <MudNavLink Href="/personal/dashboard/" Match="NavLinkMatch.All" Icon="@Icons.Material.Outlined.Dashboard">Dashboard</MudNavLink>
+            <MudNavLink Href="/personal/account" Icon="@Icons.Material.Outlined.Person">Account</MudNavLink>
+        </MudNavGroup>
+
+
+        <MudNavGroup Title="Applications" Icon="@Icons.Filled.Build" Expanded="false">
+
+            <MudNavGroup Title="Insurance stuff" Icon="@Icons.Material.Filled.Hive" Expanded="false">
+                <MudNavLink Href="/application/client" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Outlined.PersonAdd">Clients</MudNavLink>
+                <MudNavLink Href="/application/insurance" Match="NavLinkMatch.Prefix" Icon="@Icons.Filled.Money">Insurance</MudNavLink>
+            </MudNavGroup>
+
+                <MudNavGroup Title="Insurance Gallery" Icon="@Icons.Filled.PhotoAlbum" Expanded="false">
+                    <MudNavLink Href="/application/folder" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Outlined.Folder">Folders</MudNavLink>
+                    <MudNavLink Href="/application/gallery" Match="NavLinkMatch.Prefix" Icon="@Icons.Filled.ImageSearch">Photos</MudNavLink>
+                </MudNavGroup>
+
+
+
+            </MudNavGroup>
+
+
+            <MudNavGroup Title="Comunication" Icon="@Icons.Filled.SpeakerNotes" Expanded="false">
+                <MudNavLink Href="/application/tickets" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Outlined.Email">Tickets</MudNavLink>
+                <MudNavLink Href="/application/chatroom" Class="mr-n3" Icon="@Icons.Material.Outlined.Forum">Chat</MudNavLink>
+
+            </MudNavGroup>
+
+
+
+</AuthorizeView>
+    <AuthorizeView Roles="Admin">
+        <Authorized>
+
+            <MudNavGroup Title="Admin" Icon="@Icons.Filled.Settings" IconColor="Color.Error" Expanded="false">
+                <MudNavLink Href="admin/users" Icon="@Icons.Material.Outlined.PeopleAlt" IconColor="Color.Error">Users</MudNavLink>
+                <MudNavLink Href="admin/adminsettings" Icon="@Icons.Filled.AdminPanelSettings" IconColor="Color.Error">Settings</MudNavLink>
+            </MudNavGroup>
+
+        </Authorized>
+    </AuthorizeView>
+</MudNavMenu>
+
+@code { string AlertAssignmentIcon { get; set; } = "<path d=\"M19,3A2,2 0 0,1 21,5V19A2,2 0 0,1 19,21H5A2,2 0 0,1 3,19V5A2,2 0 0,1 5,3H9.18C9.6,1.84 10.7,1 12,1C13.3,1 14.4,1.84 14.82,3H19M12,3A1,1 0 0,0 11,4A1,1 0 0,0 12,5A1,1 0 0,0 13,4A1,1 0 0,0 12,3M7,7V5H5V19H19V5H17V7H7M11,9H13V13.5H11V9M11,15H13V17H11V15Z\" />";
+
+
+    protected override async Task OnInitializedAsync()
+    {
+
+
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+
+
+
+
+
+    }
+
+
+}

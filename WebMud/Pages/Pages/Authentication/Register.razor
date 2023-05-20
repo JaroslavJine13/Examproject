@@ -1,0 +1,154 @@
+﻿@page "/pages/authentication/register"
+@layout LoginLayout
+@inject WebMud.Data.IUsersService UsersService
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
+@attribute [AllowAnonymous]
+
+@using System.Text.RegularExpressions
+@using WebMud.Data
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Identity;
+@using Microsoft.AspNetCore.WebUtilities;
+@using WebMud.Models
+@using WebMud.Data
+
+<EditForm Model="@users" OnValidSubmit="OnValidSubmit">
+    <DataAnnotationsValidator />
+
+
+
+    <MudCard>
+        <MudCardContent>
+            <MudTextField Label="First Name" HelperText="Max. 50 characters"
+                          @bind-Value="users.FName" For="@(() => users.FName)" Required="true" />
+            <MudTextField Label="Last Name" HelperText="Max. 50 characters"
+                          @bind-Value="users.SName" For="@(() => users.SName)" Required="true" />
+            <MudTextField Label="Position" HelperText="Your position"
+                          @bind-Value="users.Position" For="@(() => users.Position)" Required="true" />
+            <MudTextField Label="Email" Class="mt-3"
+                          @bind-Value="users.Email" Required="true" />
+            <MudTextField Label="Password" HelperText="Choose a strong password" Class="mt-3"
+                          @bind-Value="users.Password" For="@(() => users.Password)" InputType="InputType.Password" Required="true" />
+            <MudTextField Label="Password again" HelperText="Repeat the password" Class="mt-3"
+                          @bind-Value="users.Password2" For="@(() => users.Password2)" InputType="InputType.Password" Required="true" />
+
+
+
+
+            <div class="d-flex align-center justify-space-between mt-6">
+                <MudButton Disabled="@_processing" Variant="Variant.Filled" Color="Color.Error" StartIcon="@Icons.Outlined.ExitToApp" Link="/pages/authentication/login" Class="ml-n2">Back</MudButton>
+
+                <MudButton Disabled="@_processing" ButtonType="ButtonType.Submit" Variant="Variant.Filled" StartIcon="@Icons.Outlined.Login" Color="Color.Primary" Class="ml-auto">
+                    @if (_processing)
+                    {
+                        <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                        <MudText Class="ms-2">Working</MudText>
+                    }
+                    else
+                    {
+                        <MudText>Confirm</MudText>
+                    }
+                </MudButton>
+            </div>
+        </MudCardContent>
+    </MudCard>
+
+
+</EditForm>
+
+@code
+{
+    private Users users { get; set; }
+    private bool _processing = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        users = new Users();
+
+    }
+
+    private async Task OnValidSubmit()
+    {
+        _processing = true;
+        await Task.Delay(1);
+        if (users.Id == Guid.Empty)
+        {
+
+
+
+            List<Users> usersList = new List<Users>();
+            usersList = await UsersService.GetUsersIncludeDeleted();
+
+            if (usersList.Any(a => a.Email.Equals(users.Email)))
+            {
+
+                StateHasChanged();
+                Snackbar.Clear();
+                Snackbar.Configuration.SnackbarVariant = Variant.Outlined;
+                Snackbar.Configuration.ShowCloseIcon = true;
+                Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomStart;
+                Snackbar.Add("Email already exists. Use a different one.", Severity.Error);
+
+            }
+            else
+            {
+
+
+                await UsersService.AddUsers(users, Navigation.BaseUri);
+
+                await Task.Delay(5000);
+
+                if (!AdminSettings.IsEmailVerification)
+                {
+                    StateHasChanged();
+                    Snackbar.Clear();
+                    Snackbar.Configuration.VisibleStateDuration = 9900000;
+                    Snackbar.Configuration.SnackbarVariant = Variant.Outlined;
+                    Snackbar.Configuration.ShowCloseIcon = true;
+                    Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomStart;
+                    Snackbar.Add("User has been successfully added. Continue to Login screen.", Severity.Success, config =>
+                    {
+                        config.Action = "LOGIN";
+                        config.ActionColor = Color.Tertiary;
+                        config.Onclick = snackbar =>
+                        {
+                            Navigation.NavigateTo("/pages/authentication/login");
+                            return Task.CompletedTask;
+                        };
+                    });
+
+                }
+                else
+                {
+
+                    StateHasChanged();
+                    Snackbar.Clear();
+                    Snackbar.Configuration.VisibleStateDuration = 9900000;
+                    Snackbar.Configuration.ShowCloseIcon = true;
+                    Snackbar.Configuration.SnackbarVariant = Variant.Outlined;
+                    Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomStart;
+                    Snackbar.Add("Verify user on your email account.", Severity.Success);
+
+
+                }
+                users = new Users();
+            }
+
+
+
+        }
+        _processing = false;
+    }
+
+    //private string EmailMatch(string arg)
+    //{
+
+    //    if (UsersService.GetUsers(arg)!=null)
+    //        return "Email already exists!";
+    //    return null;
+
+    //}
+
+}

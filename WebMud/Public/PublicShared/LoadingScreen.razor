@@ -1,0 +1,28 @@
+﻿@using WebMud.Models
+
+ 
+
+@if (isLoaded)
+{
+    @ChildContent
+}
+else
+{
+    <div class="centered" style="display: flex; justify-content: center; margin-top:350px; ">
+        <MudProgressCircular Color="Color.Secondary" Style="height:70px;width:70px;" Indeterminate="true" />
+    </div>
+
+}
+
+@code {
+    bool isLoaded;
+
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+ 
+    protected override async Task OnInitializedAsync()
+    {
+ 
+        isLoaded = true;
+    }
+}

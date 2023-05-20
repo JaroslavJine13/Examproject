@@ -1,0 +1,241 @@
+﻿@page "/"
+@page "/welcome"
+@attribute [AllowAnonymous]
+@inject NavigationManager Navigation
+@layout WelcomePage
+@inject IJSRuntime JS
+ 
+@using WebMud.Public.PublicShared
+@using WebMud.Data
+@using WebMud.Models
+
+
+<PageTitle>@AdminSettings.Title</PageTitle>
+<HeadContent>
+    <meta property="og:url" content="@Navigation.Uri" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Tristone SSC Liberec" />
+    <meta property="og:description" content="Centrum Sdílených Služeb Liberec" />
+    <meta property="og:image" content="@(new Uri(new Uri(Navigation.BaseUri), "resources/defimg.jpg").ToString())" />
+</HeadContent>
+
+
+
+
+<MudContainer MaxWidth="MaxWidth.Large">
+
+
+
+
+
+    <MudItem lg="12">
+
+
+        <MudText Typo="Typo.h4" Align="Align.Center">Staň se pojišťovákem, přihlaš se!</MudText>
+
+        <div class="d-flex mb-10 justify-center">
+
+            <MudIconButton Color="Color.Error" Size="Size.Large" Icon="@Icons.Filled.Login" Href="/pages/authentication/login"></MudIconButton>
+
+        </div>
+
+
+
+
+        <div class="d-flex mb-10 justify-center">
+            <MudButton Size="Size.Large" Style="height:54px" StartIcon="@Icons.Material.Filled.Photo" Variant="Variant.Filled" Href="/photos" Color="Color.Primary">Vzory pojištění</MudButton>
+
+        </div>
+
+
+
+
+        @if (AdminSettings.IsContactUsPublished)
+        {
+
+
+            <Contact></Contact>
+
+            <MudItem xs="12">
+                <MudPaper Elevation="10" Class="mt-3 mb-3">
+                    <section id="05"></section>
+                    <MudItem Class="d-flex justify-center gap-2  " xs="12" md="12" sm="12">
+                        @if (!string.IsNullOrEmpty(AdminSettings.Facebook))
+                        {
+
+                            <MudIconButton Class="mt-4" OnClick="(() => NavigateToNewTab(AdminSettings.Facebook))" Icon="@Icons.Custom.Brands.Facebook" Color="Color.Info" Size="Size.Large"></MudIconButton>
+
+                        }
+                        @if (!string.IsNullOrEmpty(AdminSettings.Linkedin))
+                        {
+
+                            <MudIconButton Class="mt-4" OnClick="(() => NavigateToNewTab(AdminSettings.Linkedin))" Icon="@Icons.Custom.Brands.LinkedIn" Color="Color.Info" Size="Size.Large"></MudIconButton>
+
+                        }
+                        @if (!string.IsNullOrEmpty(AdminSettings.Instagram))
+                        {
+
+                            <MudIconButton Class="mt-4" OnClick="(() => NavigateToNewTab(AdminSettings.Instagram))" Icon="@Icons.Custom.Brands.Instagram" Color="Color.Error" Size="Size.Large"></MudIconButton>
+
+                        }
+                    </MudItem>
+
+                    <MudHidden Breakpoint="Breakpoint.SmAndDown">
+                        <div Class=" d-flex align-start flex-wrap justify-center mud-width-full py-8">
+
+                            <div class="mt-8">
+                                <MudText Typo="Typo.h6" Class="px-4 mud-text-secondary">Kde nás najdete?</MudText>
+                                @if (string.IsNullOrEmpty(AdminSettings.Street) == false)
+                                {
+                                    <MudText Align="Align.Left" Class="px-4" Typo="Typo.body2"><b>Ulice: </b> @AdminSettings.Street</MudText>
+                                }
+                                @if (string.IsNullOrEmpty(AdminSettings.Town) == false)
+                                {
+                                    <MudText Align="Align.Left" Class="px-4" Typo="Typo.body2"><b>Město: </b> @AdminSettings.Town</MudText>
+                                }
+                            </div>
+                            <div class="mt-8">
+                                <MudText Typo="Typo.h6" Class="px-4 mud-text-secondary">Spojení</MudText>
+                                @if (string.IsNullOrEmpty(AdminSettings.Email) == false)
+                                {
+                                    <MudText Align="Align.Left" Class="px-4" Style=" overflow: hidden;" Typo="Typo.body2"><b>E-Mail: </b> @AdminSettings.Email</MudText>
+                                }
+                                @if (string.IsNullOrEmpty(AdminSettings.Phone) == false)
+                                {
+                                    <MudText Align="Align.Left" Class="px-4" Typo="Typo.body2"><b>Telefon: </b> @AdminSettings.Phone</MudText>
+                                }
+                            </div>
+                            <div class="mt-8 mb-8">
+
+
+                                <MudText Typo="Typo.h6" Class="px-4 mud-text-secondary">Právní informace</MudText>
+
+
+                                @if (string.IsNullOrEmpty(AdminSettings.ICO) == false)
+                                {
+                                    <MudText Align="Align.Left" Class="px-4" Typo="Typo.body2"><b>IČO: </b> @AdminSettings.ICO</MudText>
+                                }
+                                @if (string.IsNullOrEmpty(AdminSettings.DIC) == false)
+                                {
+
+
+                                    <MudText Align="Align.Left" Class="px-4" Typo="Typo.body2"><b>DIČ: </b> @AdminSettings.DIC</MudText>
+                                }
+                            </div>
+
+
+
+
+                        </div>
+                    </MudHidden>
+                    <MudHidden Breakpoint="Breakpoint.SmAndDown" Invert="true">
+                        <div Class=" d-flex align-start flex-wrap justify-start mud-width-full py-8">
+
+                            @*<MudText Typo="Typo.h6" Class="px-4">Kontakty</MudText>*@
+                            <div class=" ">
+
+                                <MudText Typo="Typo.h6" Class="px-4 mud-text-secondary">Kde nás najdete?</MudText>
+                                @if (string.IsNullOrEmpty(AdminSettings.Street) == false)
+                                {
+                                    <MudText Align="Align.Left" Class="px-4" Typo="Typo.body2"><b>Ulice: </b> @AdminSettings.Street</MudText>
+                                }
+                                @if (string.IsNullOrEmpty(AdminSettings.Town) == false)
+                                {
+                                    <MudText Align="Align.Left" Class="px-4" Typo="Typo.body2"><b>Město: </b> @AdminSettings.Town</MudText>
+                                }
+                            </div>
+                            <div class="mt-8">
+                                <MudText Typo="Typo.h6" Class="px-4 mud-text-secondary">Spojení</MudText>
+                                @if (string.IsNullOrEmpty(AdminSettings.Email) == false)
+                                {
+                                    <MudText Align="Align.Left" Class="px-4" Style=" overflow: hidden;" Typo="Typo.body2"><b>E-Mail: </b> @AdminSettings.Email</MudText>
+                                }
+                                @if (string.IsNullOrEmpty(AdminSettings.Phone) == false)
+                                {
+                                    <MudText Align="Align.Left" Class="px-4" Typo="Typo.body2"><b>Telefon: </b> @AdminSettings.Phone</MudText>
+                                }
+                            </div>
+                            <div class="mt-8 mb-8">
+                                <MudText Typo="Typo.h6" Class="px-4 mud-text-secondary">Právní informace</MudText>
+                                @if (string.IsNullOrEmpty(AdminSettings.ICO) == false)
+                                {
+                                    <MudText Align="Align.Left" Class="px-4" Typo="Typo.body2"><b>IČO: </b> @AdminSettings.ICO</MudText>
+                                }
+                                @if (string.IsNullOrEmpty(AdminSettings.DIC) == false)
+                                {
+
+
+                                    <MudText Align="Align.Left" Class="px-4" Typo="Typo.body2"><b>DIČ: </b> @AdminSettings.DIC</MudText>
+                                }
+                            </div>
+
+                        </div>
+                    </MudHidden>
+                </MudPaper>
+            </MudItem>
+        }
+
+
+    </MudItem>
+
+
+
+
+    <MudItem lg="12">
+
+        <MudGrid>
+            <MudItem xs="12">
+
+                <MudPaper Elevation="10">
+                    <div class="google-maps">
+                        @((MarkupString)_Map)
+                    </div>
+                </MudPaper>
+
+            </MudItem>
+        </MudGrid>
+    </MudItem>
+
+</MudContainer>
+
+
+
+@code{
+
+    private string _Map { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+
+
+
+        _Map = AdminSettings.GoogleMapsIframe;
+
+
+    }
+
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+
+
+            //await JS.InvokeAsync<string>();
+
+
+
+        }
+
+    }
+
+    public async Task NavigateToNewTab(string url)
+    {
+
+        await JS.InvokeAsync<object>("open", url, "_blank");
+
+    }
+
+
+
+}

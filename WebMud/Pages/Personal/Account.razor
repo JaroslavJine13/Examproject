@@ -1,0 +1,353 @@
+﻿@page "/personal/account"
+@attribute [Authorize(Roles = "Admin, User")]
+@inject WebMud.Data.IUsersService UsersService
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
+@using System.Text.RegularExpressions
+@using WebMud.Data
+@using System.ComponentModel.DataAnnotations;
+@inject AuthenticationStateProvider GetAuthenticationStateAsync
+@using System.Threading;
+@using WebMud.Models
+@using System
+@using System.IO
+@using Microsoft.AspNetCore.Hosting
+@using Microsoft.Extensions.Logging
+@inject IWebHostEnvironment Environment
+
+
+@if (users is null)
+{
+
+    <div class="docs-section-content-inner relative d-flex flex-grow-1 flex-wrap justify-center align-center px-8 pb-8 pt-2">
+        <MudProgressCircular Color="Color.Primary" Style="height:70px;width:70px;" Indeterminate="true" />
+
+    </div>
+
+}
+else
+{
+
+
+    <AuthorizeView Roles="Admin, User">
+        @*@{Guid uid = new Guid(context.User.Claims.First().Value);}*@
+        <MudText Typo="Typo.h5" Color="Color.Primary" Class="mb-4">Account</MudText>
+        <MudTabs Elevation="1" Rounded="true" PanelClass="mt-6">
+            <MudTabPanel Text="General">
+                <MudGrid>
+                    <MudItem xs="12" sm="4" md="3">
+                        <MudCard>
+                            <MudCardHeader>
+                                <CardHeaderContent>
+                                    <MudText>Public Profile</MudText>
+                                </CardHeaderContent>
+                            </MudCardHeader>
+                            <MudCardContent>
+                                <div class="d-flex justify-center mb-4">
+
+                                    @if (!String.IsNullOrEmpty(users.AvatarPath))
+                                    {
+                                        <MudAvatar Style="height:110px; width:110px;" Image="@users.AvatarPath" />
+
+                                    }
+                                    else
+                                    {
+                                        <MudAvatar Color="Color.Dark" Style="height:100px; width:100px;">@users.FName.ToUpper().FirstOrDefault()@users.SName.ToUpper().FirstOrDefault()</MudAvatar>
+                                    }
+
+                                </div>
+                                <MudText Align="Align.Center">@users.FName @users.SName</MudText>
+                                <MudText Align="Align.Center">@users.Position</MudText>
+                            </MudCardContent>
+                            <MudCardActions Class="d-flex justify-center">
+                                <InputFile id="fileInput" OnChange="LoadFiles" hidden  accept=".jpg, .jpeg, .png"  />
+                                <MudButton HtmlTag="label" Color="@AvatarButtonColor" For="fileInput">@AvatarButtonText</MudButton>
+                            </MudCardActions>
+
+                            @*<p>
+                                    <label>
+                                        Upload up to @maxFileSize bytes
+
+                                    </label>
+                                </p>*@
+
+                            @if (isLoading)
+                            {
+                                <MudCardActions Class="d-flex justify-center">
+                                    <p>Progress: @string.Format("{0:P0}", progressPercent)</p>
+
+                                </MudCardActions>
+                                <MudCardActions Class="d-flex justify-center">
+
+                                    <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="my-7" />
+                                </MudCardActions>
+                            }
+                            @*else
+                                {
+                                    <ul>
+                                        @foreach (var file in loadedFiles)
+                                        {
+                                            <li>
+                                                <ul>
+                                                    <li>Name: @file.Name</li>
+                                                    <li>Last modified: @file.LastModified.ToString()</li>
+                                                    <li>Size (bytes): @file.Size</li>
+                                                    <li>Content type: @file.ContentType</li>
+                                                </ul>
+                                            </li>
+                                        }
+                                    </ul>
+                                }*@
+                        </MudCard>
+                    </MudItem>
+                    <MudItem xs="12" sm="8" md="9">
+                        <EditForm Model="@users" OnValidSubmit="OnValidSubmit" OnInvalidSubmit="OnInvalidSubmit" Context="c">
+                            <DataAnnotationsValidator />
+                            <MudCard>
+                                <MudCardHeader>
+                                    <CardHeaderContent>
+                                        <MudText>Profile Details</MudText>
+                                    </CardHeaderContent>
+                                </MudCardHeader>
+                                <MudCardContent>
+                                    <MudGrid>
+                                        <MudItem xs="12" md="6">
+                                            <MudTextField @bind-Value="users.FName" Label="First Name" Variant="Variant.Outlined" For="@(() => users.FName)" />
+                                        </MudItem>
+                                        <MudItem xs="12" md="6">
+                                            <MudTextField @bind-Value="users.SName" Label="Last Name" Variant="Variant.Outlined" For="@(() => users.SName)" />
+                                        </MudItem>
+                                        <MudItem xs="12" md="6">
+                                            <MudTextField @bind-Value="users.Position" Label="Job Title" Variant="Variant.Outlined" For="@(() => users.Position)" />
+                                        </MudItem>
+                                        <MudItem xs="12" md="6">
+                                            <MudTextField @bind-Value="users.Email" Label="Email" Variant="Variant.Outlined" HelperText="Your email account" InputType="InputType.Email" Disabled="true" />
+                                        </MudItem>
+                                    </MudGrid>
+                                </MudCardContent>
+                                <MudCardActions Class="pb-4 pl-4">
+                                    <MudButton Variant="Variant.Filled" Color="Color.Primary" ButtonType="ButtonType.Submit" Class="ml-auto">Save Changes</MudButton>
+                                </MudCardActions>
+                            </MudCard>
+                        </EditForm>
+                    </MudItem>
+                </MudGrid>
+            </MudTabPanel>
+            @*<MudTabPanel Text="Notifications">
+                    <MudCard>
+                        <MudCardHeader>
+                            <CardHeaderContent>
+                                <MudText>Notifications</MudText>
+                            </CardHeaderContent>
+                        </MudCardHeader>
+                        <MudCardContent>
+                            <MudGrid>
+                                <MudItem xs="12" sm="4">
+                                        <MudText>
+                                            <b>Email</b>
+                                        </MudText>
+                                        <MudText Typo="Typo.body2">
+                                            What type of system notifications you want to recieve to your email.
+                                        </MudText>
+                                        <div class="d-flex flex-column mt-6">
+                                            <MudCheckBox @bind-Checked="@NotificationEmail_1" Label="Threat Detection" Color="Color.Primary"></MudCheckBox>
+                                            <MudCheckBox @bind-Checked="@NotificationEmail_2" Label="Server Errors" Color="Color.Error"></MudCheckBox>
+                                            <MudCheckBox @bind-Checked="@NotificationEmail_3" Label="Server Warnings" Color="Color.Warning"></MudCheckBox>
+                                            <MudCheckBox @bind-Checked="@NotificationEmail_4" Label="Spam" Color="Color.Success"></MudCheckBox>
+                                        </div>
+                                    </MudItem>
+                                    <MudItem xs="12" sm="8">
+                                        <MudText>
+                                            <b>Chat</b>
+                                        </MudText>
+                                        <MudText Typo="Typo.body2">
+                                            What type of system notifications you want to recieve in the phone application.
+                                        </MudText>
+                                        <div class="d-flex flex-column mt-6">
+                                            <MudCheckBox @bind-Checked="@NotificationChat_1" Label="Threat Detection" Color="Color.Primary"></MudCheckBox>
+                                            <MudCheckBox @bind-Checked="@NotificationChat_2" Label="Server Errors" Color="Color.Error"></MudCheckBox>
+                                            <MudCheckBox @bind-Checked="@NotificationChat_3" Label="Server Warnings" Color="Color.Warning"></MudCheckBox>
+                                            <MudCheckBox @bind-Checked="@NotificationChat_4" Label="Spam" Color="Color.Success"></MudCheckBox>
+                                        </div>
+                                    </MudItem>
+                            </MudGrid>
+                        </MudCardContent>
+                        <MudCardActions Class="pb-4 pl-4">
+                            <MudButton Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto">Save Changes</MudButton>
+                        </MudCardActions>
+                    </MudCard>
+                </MudTabPanel>*@
+            <MudTabPanel Text="Security">
+                <Password></Password>
+            </MudTabPanel>
+        </MudTabs>
+    </AuthorizeView>
+
+}
+
+@code {
+
+
+    Users users { get; set; }
+    private System.Security.Claims.ClaimsPrincipal Authuser { get; set; }
+
+
+
+    public string AvatarImageLink { get; set; }
+    public string AvatarIcon { get; set; }
+    public string AvatarButtonText { get; set; } = "Upload Picture";
+    public Color AvatarButtonColor { get; set; } = Color.Info;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authstate = await GetAuthenticationStateAsync.GetAuthenticationStateAsync();
+        Authuser = authstate.User;
+
+
+        if (Authuser.Identity.IsAuthenticated)
+        {
+
+            users = await UsersService.GetUsers(Authuser.Identity.Name);
+
+            AvatarImageLink = users.AvatarPath;
+        }
+
+    }
+
+    private async Task OnValidSubmit()
+    {
+        if (users.Id == Guid.Empty)
+        {
+            SnackbarOn("Nelze uložit!", Defaults.Classes.Position.BottomStart, Severity.Error);
+            StateHasChanged();
+
+        }
+        else
+        {
+            users.Email = Authuser.Identity.Name;
+            await UsersService.UpdateUsers(users);
+
+            SnackbarOn("Účet je uložen!", Defaults.Classes.Position.BottomStart, Severity.Success);
+            StateHasChanged();
+        }
+
+
+    }
+
+    private void OnInvalidSubmit()
+    {
+        SnackbarOn("Vyplňte prosím správně formulář!", Defaults.Classes.Position.BottomStart, Severity.Error);
+        StateHasChanged();
+
+    }
+
+    void DeletePicture()
+    {
+        if (!String.IsNullOrEmpty(AvatarImageLink))
+        {
+            AvatarImageLink = null;
+            AvatarIcon = Icons.Material.Outlined.SentimentVeryDissatisfied;
+            AvatarButtonText = "Upload Picture";
+            AvatarButtonColor = Color.Primary;
+        }
+        else
+        {
+            return;
+        }
+    }
+
+
+
+
+
+    void SnackbarOn(string message, string position, Severity sev)
+    {
+        Snackbar.Clear();
+        Snackbar.Configuration.PositionClass = position;
+        Snackbar.Configuration.SnackbarVariant = Variant.Outlined;
+        Snackbar.Add(message, sev);
+    }
+
+
+
+
+
+
+    //------------------------
+
+
+    private List<IBrowserFile> loadedFiles = new();
+    private long maxFileSize = 1024 * 1024 * 15;
+    private int maxAllowedFiles = 1;
+    private bool isLoading;
+    private double progressPercent;
+
+    private async Task LoadFiles(InputFileChangeEventArgs e)
+    {
+        isLoading = true;
+        loadedFiles.Clear();
+        progressPercent = 0;
+        //await Task.Delay(1);
+        foreach (var file in e.GetMultipleFiles(maxAllowedFiles))
+        {
+            if (Path.GetExtension(e.File.Name).ToLower() == ".jpg" || Path.GetExtension(e.File.Name).ToLower() == ".jpeg" || Path.GetExtension(e.File.Name).ToLower() == ".png")
+            {
+
+
+                try
+                {
+                    string id = Guid.NewGuid().ToString();
+                    var trustedFileName = Path.GetRandomFileName();
+                    var path = $"{Environment.WebRootPath}\\resources\\{id + Path.GetExtension(e.File.Name)}";
+                    Console.Write(path.ToString());
+                    await using FileStream writeStream = new(path, FileMode.Create);
+                    using var readStream = file.OpenReadStream(maxFileSize);
+                    var bytesRead = 0;
+                    var totalRead = 0;
+                    var buffer = new byte[1024 * 10];
+
+                    while ((bytesRead = await readStream.ReadAsync(buffer)) != 0)
+                    {
+                        totalRead += bytesRead;
+
+                        await writeStream.WriteAsync(buffer, 0, bytesRead);
+
+                        progressPercent = Convert.ToDouble(Decimal.Divide(totalRead, file.Size));
+
+                        StateHasChanged();
+                    }
+
+
+                    await UsersService.InsertImage($"/resources/{id + Path.GetExtension(e.File.Name)}", Authuser.Identity.Name);
+                    AvatarImageLink = users.AvatarPath;
+                    StateHasChanged();
+
+                    StateHasChanged();
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("File: {Filename} Error: {Error}",
+                        file.Name, ex.Message);
+                }
+            }
+        }
+
+        var timer = new Timer(new TimerCallback(_ =>
+        {
+            Navigation.NavigateTo(Navigation.Uri, forceLoad: true);
+        }), null, 500, 500);
+
+        isLoading = false;
+    }
+
+
+
+
+
+
+
+
+
+
+}

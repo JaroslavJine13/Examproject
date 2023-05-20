@@ -1,0 +1,73 @@
+﻿@page "/pages/verifytoken/{Token}"
+@layout LoginLayout
+@inject WebMud.Data.ITokenService TokenService
+@inject WebMud.Data.IUsersService UserService
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
+
+
+@attribute [AllowAnonymous]
+
+<h2>Verification</h2>
+<br />
+@if (!Wait)
+{
+    @if (Success)
+    {
+        <MudItem xs="12">
+            <MudText Typo="Typo.h6">You are succesfully verified, please login...</MudText>
+            <br />
+            <MudButton Link="/pages/authentication/login"
+                       Target="_blank"
+                       Variant="Variant.Outlined"
+                       EndIcon="@Icons.Filled.Login"
+                       Color="Color.Tertiary">
+                LOGIN
+            </MudButton>
+        </MudItem>
+
+
+
+    }
+    else
+    {
+
+        <MudItem xs="12">
+            <MudText Typo="Typo.h6">Wrong or expired verification...</MudText>
+
+        </MudItem>
+
+    }
+
+}
+else
+{
+
+    <MudItem xs="12">
+        <MudProgressCircular Color="Color.Secondary" Indeterminate="true" Size="Size.Large" />
+
+
+    </MudItem>
+}
+
+@code {
+
+    [Parameter]
+    public string Token { get; set; }
+
+
+    bool Success;
+    bool Wait;
+    protected override async Task OnInitializedAsync()
+    {
+
+        Wait = true;
+
+        Success = await TokenService.VerifyToken(Token );
+
+        Wait = false;
+
+
+    }
+
+}

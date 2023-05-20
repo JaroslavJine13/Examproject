@@ -1,0 +1,671 @@
+﻿@page "/admin/adminsettings"
+@using WebMud.Data
+@attribute [Authorize(Roles = "Admin")]
+@inject ISettingsService settingsService
+@inject IJSRuntime JSRuntime
+@using Microsoft.AspNetCore.Razor.TagHelpers;
+@using Blazored.TextEditor
+@using WebMud.Models
+@inject ISnackbar Snackbar
+@using MudBlazor.Services
+@using System.ComponentModel.DataAnnotations
+<MudPaper Elevation="2">
+    <MudToolBar>
+        <MudText Typo="Typo.h5" Class="mr-5">Settings</MudText>
+        <MudSpacer />
+
+        <MudButton ButtonType="ButtonType.Submit" OnClick="ProcessSomething" Disabled="@_processing" Variant="Variant.Filled" Color="Color.Tertiary" StartIcon="@Icons.Material.Filled.Save" Class="float-rigt">
+            @if (_processing)
+            {
+                <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                <MudText Class="ms-2">Processing</MudText>
+            }
+            else
+            {
+                <MudText>Save</MudText>
+            }
+        </MudButton>
+    </MudToolBar>
+</MudPaper>
+
+
+<MudPaper Elevation="2">
+
+    <MudTabs Outlined="false" Position="@_Position" Rounded="true" Border="true"
+             ApplyEffectsToContainer="true" Class="mt-8" PanelClass="pa-6" KeepPanelsAlive="true">
+        <MudTabPanel Text="General">
+
+            <MudGrid>
+                <MudItem xs="12">
+
+                    <MudText Typo="Typo.h6" Class="mr-5">General settings</MudText>
+
+                </MudItem>
+                <MudItem xs="12">
+
+                    <MudSwitch @bind-Checked="@_IsEmailVerification" @onclick="SwitchA" Color="Color.Primary">Use email verification: @_IsEmailVerification</MudSwitch>
+
+                </MudItem>
+                <MudItem xs="12">
+
+                    <MudSwitch @bind-Checked="@_IsAdminVerification" @onclick="SwitchB" Color="Color.Primary">Admin approves new users: @(_IsAdminVerification? "Zap." : "Vyp.")</MudSwitch>
+
+                </MudItem>
+                <MudItem xs="12">
+
+                    <MudSwitch @bind-Checked="@_IsDefaultDark" Color="Color.Primary">Default backend Darkmode: @_IsDefaultDark</MudSwitch>
+
+                </MudItem>
+                <MudItem xs="12">
+
+                    <MudSwitch @bind-Checked="@_IsPublicDefaultDark" Color="Color.Primary">Default frontend Darkmode: @_IsPublicDefaultDark</MudSwitch>
+
+                </MudItem>
+                <MudItem xs="12">
+
+                    <MudSwitch @bind-Checked="@_IsContactUsPublished" Color="Color.Primary">Is Contact form published: @_IsContactUsPublished</MudSwitch>
+
+                </MudItem>
+                <MudItem xs="12">
+
+                    <MudSwitch @bind-Checked="@_IsGalleryPublished" Color="Color.Primary">Is Gallery published: @_IsGalleryPublished</MudSwitch>
+
+                </MudItem>
+                <MudItem xs="12">
+
+                    <MudTextField Label="Website Name" MaxLength="255"  Variant="Variant.Text" @bind-Value="@_Name"></MudTextField>
+
+
+                </MudItem>
+            </MudGrid>
+        </MudTabPanel>
+        <MudTabPanel Text="Email">
+            <MudGrid>
+                <MudItem xs="12">
+
+                    <MudText Typo="Typo.h6" Class="mr-5">Email settings</MudText>
+
+                </MudItem>
+                <MudItem xs="12">
+
+                    <MudTextField Label="Generic mail" Variant="Variant.Text" @bind-Value="@_EmailGeneric"></MudTextField>
+
+
+                </MudItem>
+                <MudItem xs="12">
+
+                    <MudTextField T="string" Label="Password" InputType="InputType.Password" Variant="Variant.Text" @bind-Value="@_EmailPassword"></MudTextField>
+
+
+                </MudItem>
+                <MudItem xs="12">
+
+                    <MudTextField Label="Displayed mail" Variant="Variant.Text" @bind-Value="@_EmailDisplayed"></MudTextField>
+
+
+                </MudItem>
+                <MudItem xs="12">
+
+                    <MudTextField Label="SMTP Server" Variant="Variant.Text" @bind-Value="@_Smtp"></MudTextField>
+
+
+                </MudItem>
+                <MudItem xs="12">
+
+                    <MudNumericField HideSpinButtons="true" @bind-Value="@_Port" Label="Standard" Variant="Variant.Text" Min="0" />
+
+                </MudItem>
+                <MudItem xs="12">
+
+                    <MudSwitch @bind-Checked="@_IsSsl" Color="Color.Primary">SSL required: @_IsSsl</MudSwitch>
+
+                </MudItem>
+            </MudGrid>
+        </MudTabPanel>
+        <MudTabPanel Text="Google">
+            <MudGrid>
+                <MudItem xs="12">
+
+                    <MudText Typo="Typo.h6" Class="mr-5">Google</MudText>
+                    <br />
+
+                    <MudItem xs="12">
+                        <MudTooltip Text="You need to restart IIS after change" Color="Color.Error" Placement="Placement.Bottom" Arrow="true">
+                            <MudTextField Label="Google Analytics ID" Variant="Variant.Text" @bind-Value="@_GoogleAnalyticsID"></MudTextField>
+
+                        </MudTooltip>
+
+                    </MudItem>
+                    <br />
+                    <MudItem xs="12">
+
+                        <MudTextField Label="Metadata description" Variant="Variant.Text" @bind-Value="@_MetaDescription"></MudTextField>
+
+                    </MudItem>
+                    <br />
+
+                    <MudItem xs="12">
+
+                        <MudTextField Label="Metadata Keywords" Variant="Variant.Text" @bind-Value="@_MetaKeywords"></MudTextField>
+
+                    </MudItem>
+                    <br />
+
+                    <MudItem xs="12">
+
+                        <MudTextField Label="Title" Variant="Variant.Text" @bind-Value="@_Title"></MudTextField>
+
+                    </MudItem>
+
+
+                </MudItem>
+            </MudGrid>
+        </MudTabPanel>
+        <MudTabPanel Text="Google Map">
+            <MudGrid>
+                <MudItem xs="12">
+
+                    <MudText Typo="Typo.h6" Class="mr-5">Google Map</MudText>
+                    <br />
+
+                    <MudItem xs="12">
+
+                        <MudTextField Label="Google iframe HTML tag" Variant="Variant.Outlined" @bind-Value="@_GoogleMapsIframe" Lines="9"></MudTextField>
+
+                    </MudItem>
+                    <br />
+
+
+                </MudItem>
+            </MudGrid>
+        </MudTabPanel>
+        <MudTabPanel Text="Social media">
+            <MudGrid>
+                <MudItem xs="12">
+
+                    <MudText Typo="Typo.h6" Class="mr-5">Social media</MudText>
+                    <br />
+
+                    <MudItem xs="12">
+
+                        <MudTextField Label="Facebook link" Variant="Variant.Text" @bind-Value="@_Facebook"></MudTextField>
+
+                    </MudItem>
+                    <br />
+                    <MudItem xs="12">
+
+                        <MudTextField Label="Instagram link" Variant="Variant.Text" @bind-Value="@_Instagram"></MudTextField>
+
+                    </MudItem>
+                    <br />
+                    <MudItem xs="12">
+
+                        <MudTextField Label="LinkedIn link" Variant="Variant.Text" @bind-Value="@_Linkedin"></MudTextField>
+
+                    </MudItem>
+                    <br />
+
+                </MudItem>
+            </MudGrid>
+        </MudTabPanel>
+        <MudTabPanel Text="Adress">
+            <MudGrid>
+                <MudItem xs="12">
+
+                    <MudText Typo="Typo.h6" Class="mr-5">Adress</MudText>
+                    <br />
+
+                    <MudItem xs="12">
+
+                        <MudTextField Label="Street" Variant="Variant.Text" @bind-Value="@_Street"></MudTextField>
+
+                    </MudItem>
+                    <br />
+                    <MudItem xs="12">
+
+                        <MudTextField Label="Town" Variant="Variant.Text" @bind-Value="@_Town"></MudTextField>
+
+                    </MudItem>
+                    <br />
+                    <MudItem xs="12">
+
+                        <MudTextField Label="Country" Variant="Variant.Text" @bind-Value="@_City"></MudTextField>
+
+                    </MudItem>
+                    <br />
+                    <MudItem xs="12">
+
+                        <MudTextField Label="ICO" Variant="Variant.Text" @bind-Value="@_ICO"></MudTextField>
+
+                    </MudItem>
+                    <br />
+                    <MudItem xs="12">
+
+                        <MudTextField Label="DIC" Variant="Variant.Text" @bind-Value="@_DIC"></MudTextField>
+
+                    </MudItem>
+                    <br />
+                    <MudItem xs="12">
+
+                        <MudTextField Label="Contact Email" Variant="Variant.Text" @bind-Value="@_Email"></MudTextField>
+
+                    </MudItem>
+                    <br />
+                    <MudItem xs="12">
+
+                        <MudTextField Label="Contact Email 2" Variant="Variant.Text" @bind-Value="@_Email2"></MudTextField>
+
+                    </MudItem>
+                    <br />
+                    <MudItem xs="12">
+
+                        <MudTextField Label="Contact phone" Variant="Variant.Text" @bind-Value="@_Phone"></MudTextField>
+
+                    </MudItem>
+                    <br />
+                    <MudItem xs="12">
+
+                        <MudTextField Label="Contact phone 2" Variant="Variant.Text" @bind-Value="@_Phone2"></MudTextField>
+
+                    </MudItem>
+                    <br />
+
+
+                </MudItem>
+            </MudGrid>
+        </MudTabPanel>
+        <MudTabPanel Text="Email Templates">
+            <MudGrid>
+                <MudItem xs="12">
+
+                    <MudText Typo="Typo.h6" Class="mr-5">Email templates</MudText>
+                    <br />
+
+                    <MudItem xs="12">
+                        <BlazoredTextEditor   @ref="@QuillHtml1">
+                            <ToolbarContent >
+                                <MudText> Email authentication</MudText>
+                                <select class="ql-header">
+
+                                    <option selected=""></option>
+                                    <option value="1"></option>
+                                    <option value="2"></option>
+                                    <option value="3"></option>
+                                    <option value="4"></option>
+                                    <option value="5"></option>
+                                </select>
+                                <span class="ql-formats ">
+                                    <button class="ql-bold"></button>
+                                    <button class="ql-italic"></button>
+                                    <button class="ql-underline"></button>
+                                    <button class="ql-strike"></button>
+                                </span>
+                                <span class="ql-formats">
+                                    <select class="ql-color"></select>
+                                    <select class="ql-background"></select>
+                                </span>
+                                <span class="ql-formats">
+                                    <button class="ql-list" value="ordered"></button>
+                                    <button class="ql-list" value="bullet"></button>
+                                </span>
+                                <span class="ql-formats">
+                                    <button class="ql-link"></button>
+                                </span>
+                            </ToolbarContent>
+                            <EditorContent >
+                                @if (Quilltext1 != null)
+                                {
+                                    @((MarkupString)Quilltext1)
+
+                                }
+
+
+
+                            </EditorContent>
+                        </BlazoredTextEditor>
+
+                    </MudItem>
+                    <br />
+
+                </MudItem>
+            </MudGrid>
+        </MudTabPanel>
+    </MudTabs>
+</MudPaper>
+
+<MudPaper Class="mt-8 px-5 py-5" Elevation="2">
+    <MudGrid>
+        <MudItem xs="12">
+
+            <MudText Typo="Typo.h6" Class="mr-5">GDPR</MudText>
+            <br />
+
+            <MudItem xs="12">
+
+                <BlazoredTextEditor @ref="@QuillHtml" Placeholder="">
+                    <ToolbarContent>
+                        <MudText> GDPR</MudText>
+                        <select class="ql-header">
+
+                            <option selected=""></option>
+                            <option value="1"></option>
+                            <option value="2"></option>
+                            <option value="3"></option>
+                            <option value="4"></option>
+                            <option value="5"></option>
+                        </select>
+                        <span class="ql-formats ">
+                            <button class="ql-bold"></button>
+                            <button class="ql-italic"></button>
+                            <button class="ql-underline"></button>
+                            <button class="ql-strike"></button>
+                        </span>
+                        <span class="ql-formats">
+                            <select class="ql-color"></select>
+                            <select class="ql-background"></select>
+                        </span>
+                        <span class="ql-formats">
+                            <button class="ql-list" value="ordered"></button>
+                            <button class="ql-list" value="bullet"></button>
+                        </span>
+                        <span class="ql-formats">
+                            <button class="ql-link"></button>
+                        </span>
+                    </ToolbarContent>
+                    <EditorContent>
+                        @if (Quilltext != null)
+                        {
+                            @((MarkupString)Quilltext)
+
+                        }
+
+
+
+                    </EditorContent>
+                </BlazoredTextEditor>
+
+                <br />
+
+            </MudItem>
+
+
+
+
+        </MudItem>
+    </MudGrid>
+</MudPaper>
+
+
+@code {
+
+    BlazoredTextEditor QuillHtml = new BlazoredTextEditor();
+
+    BlazoredTextEditor QuillHtml1 { get; set; }
+
+    private bool _Initloading { get; set; }
+    private bool _processing = false;
+
+
+    private bool _IsEmailVerification;
+    private bool _IsAdminVerification;
+    private bool _IsDefaultDark;
+    private string _EmailGeneric;
+    private string _EmailPassword;
+    private string _EmailDisplayed;
+    private string _Smtp;
+    private int _Port;
+    private bool _IsSsl;
+    private string _GoogleAnalyticsID;
+    private string _MetaDescription;
+    private string _MetaKeywords;
+    private string _Title;
+
+    private string _Facebook;
+    private string _Instagram;
+    private string _Linkedin;
+    private string _Street;
+    private string _Town;
+    private string _City;
+    private string _ICO;
+    private string _DIC;
+    private bool _IsPublicDefaultDark;
+    private string _GoogleMapsIframe;
+    private string _TristoneWeb;
+    private string _GDPR;
+    private string _GDPR_EN;
+    private string _Phone;
+    private string _Email;
+    private string _Phone2;
+    private string _Email2;
+    private string _EmailTemplate;
+    private bool _IsContactUsPublished;
+    private bool _IsGalleryPublished;
+
+    [StringLength(255)]
+    private string _Name;
+
+
+    private string Quilltext;
+    private string Quilltext_EN;
+    private string Quilltext1;
+
+
+    protected override void OnInitialized()
+    {
+
+        QuillHtml1 = new BlazoredTextEditor();
+
+        Quilltext = Models.AdminSettings.GDPR;
+        Quilltext1 = Models.AdminSettings.EmailTemplate;
+
+        StateHasChanged();
+
+    }
+
+    //------------- Resize model ------------------------------------
+    [Inject] IResizeService ResizeService { get; set; }
+    private Position _Position = Position.Left;
+
+    int nn { get; set; }
+    int width = 0;
+    int height = 0;
+
+    private Guid _subscriptionId;
+
+    public async ValueTask DisposeAsync() => await ResizeService.Unsubscribe(_subscriptionId);
+
+
+    protected override async void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            Init();
+
+
+            _subscriptionId = await ResizeService.Subscribe((size) =>
+            {
+                width = size.Width;
+                height = size.Height;
+
+
+                if (size.Width <= 600)
+                {
+
+                    _Position = Position.Top;
+
+                }
+                else
+                {
+
+                    _Position = Position.Left;
+                }
+
+                InvokeAsync(StateHasChanged);
+            }, new ResizeOptions
+            {
+                ReportRate = 50,
+                NotifyOnBreakpointOnly = false,
+            });
+
+            var size = await ResizeService.GetBrowserWindowSize();
+            height = size.Height;
+            width = size.Width;
+
+            if (size.Width <= 600)
+            {
+
+                _Position = Position.Top;
+
+            }
+            else
+            {
+
+                _Position = Position.Left;
+            }
+
+
+            StateHasChanged();
+        }
+
+        await base.OnAfterRenderAsync(firstRender);
+    }
+
+    private void Init()
+    {
+
+        _IsEmailVerification = Models.AdminSettings.IsEmailVerification;
+        _IsDefaultDark = Models.AdminSettings.IsDefaultDark;
+        _EmailGeneric = Models.AdminSettings.EmailGeneric;
+        _EmailPassword = Models.AdminSettings.EmailPassword;
+        _EmailDisplayed = Models.AdminSettings.EmailDisplayed;
+        _IsAdminVerification = Models.AdminSettings.IsAdminVerification;
+
+        _Smtp = Models.AdminSettings.Smtp;
+        _Port = Models.AdminSettings.Port;
+        _IsSsl = Models.AdminSettings.IsSsl;
+
+        _GoogleAnalyticsID = Models.AdminSettings.GoogleAnalyticsID;
+        _MetaDescription = Models.AdminSettings.MetaDescription;
+        _MetaKeywords = Models.AdminSettings.MetaKeywords;
+        _Title = Models.AdminSettings.Title;
+
+        _Facebook = Models.AdminSettings.Facebook;
+        _Instagram = Models.AdminSettings.Instagram;
+        _Linkedin = Models.AdminSettings.Linkedin;
+        _Street = Models.AdminSettings.Street;
+        _Town = Models.AdminSettings.Town;
+        _City = Models.AdminSettings.City;
+        _ICO = Models.AdminSettings.ICO;
+        _DIC = Models.AdminSettings.DIC;
+        _IsPublicDefaultDark = Models.AdminSettings.IsPublicDefaultDark;
+        _GoogleMapsIframe = Models.AdminSettings.GoogleMapsIframe;
+        _TristoneWeb = Models.AdminSettings.TristoneWeb;
+        _GDPR = Models.AdminSettings.GDPR;
+
+
+        _Phone = Models.AdminSettings.Phone;
+        _Email = Models.AdminSettings.Email;
+        _Phone2 = Models.AdminSettings.Phone2;
+        _Email2 = Models.AdminSettings.Email2;
+
+        _EmailTemplate = Models.AdminSettings.EmailTemplate;
+
+
+        _IsContactUsPublished = Models.AdminSettings.IsContactUsPublished;
+        _IsGalleryPublished = Models.AdminSettings.IsGalleryPublished;
+        _Name = Models.AdminSettings.Name;
+    }
+
+    private async Task ProcessSomething()
+    {
+        _processing = true;
+
+        await Task.Delay(250);
+        //hotfix
+        bool iserror = QuillHtml.GetHTML().IsFaulted;
+
+
+        if (iserror == false)
+        {
+            string quill = await this.QuillHtml.GetHTML();
+            _GDPR = quill;
+        }
+        bool iserror1 = QuillHtml1.GetHTML().IsFaulted;
+
+
+        if (iserror1 == false)
+        {
+            string quill = await this.QuillHtml1.GetHTML();
+            _EmailTemplate = quill;
+        }
+
+
+
+        await settingsService.SetSettings(
+_IsEmailVerification,
+_IsDefaultDark,
+_EmailGeneric,
+_EmailPassword,
+_EmailDisplayed,
+_Smtp,
+_Port,
+_IsSsl,
+_IsAdminVerification,
+_GoogleAnalyticsID,
+_MetaDescription,
+_MetaKeywords,
+_Title,
+_Facebook,
+_Instagram,
+_Linkedin,
+_Street,
+_Town,
+_City,
+_ICO,
+_DIC,
+_IsPublicDefaultDark,
+_GoogleMapsIframe,
+_TristoneWeb,
+_GDPR,
+_Phone,
+    _Email,
+    _Phone2,
+    _Email2,
+    _EmailTemplate,
+    _IsContactUsPublished,
+    _IsGalleryPublished,
+    _Name
+    );
+
+
+
+        await Task.Delay(250);
+        _processing = false;
+        SnackbarOn("Saved!", Defaults.Classes.Position.BottomStart, Severity.Success);
+
+        StateHasChanged();
+    }
+
+    void SwitchA()
+    {
+        //_IsAdminVerification = _IsEmailVerification!;
+        //StateHasChanged();
+    }
+
+    void SwitchB()
+    {
+
+        //_IsEmailVerification = _IsAdminVerification!;
+
+        //StateHasChanged();
+    }
+
+    void SnackbarOn(string message, string position, Severity sev)
+    {
+        Snackbar.Clear();
+        Snackbar.Configuration.PositionClass = position;
+        Snackbar.Configuration.SnackbarVariant = Variant.Outlined;
+        Snackbar.Add(message, sev);
+    }
+
+}

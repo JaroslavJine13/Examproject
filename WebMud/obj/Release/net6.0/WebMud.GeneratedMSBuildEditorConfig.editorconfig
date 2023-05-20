@@ -1,0 +1,221 @@
+is_global = true
+build_property.TargetFramework = net6.0
+build_property.TargetPlatformMinVersion = 
+build_property.UsingMicrosoftNETSdkWeb = true
+build_property.ProjectTypeGuids = 
+build_property.InvariantGlobalization = 
+build_property.PlatformNeutralAssembly = 
+build_property.EnforceExtendedAnalyzerRules = 
+build_property._SupportedPlatformList = Linux,macOS,Windows
+build_property.RootNamespace = WebMud
+build_property.RootNamespace = WebMud
+build_property.ProjectDir = C:\Users\pracu\source\repos\FASTWEB_NA_HRANI\WebMud\
+build_property.RazorLangVersion = 6.0
+build_property.SupportLocalizedComponentNames = 
+build_property.GenerateRazorMetadataSourceChecksumAttributes = 
+build_property.MSBuildProjectDirectory = C:\Users\pracu\source\repos\FASTWEB_NA_HRANI\WebMud
+build_property._RazorSourceGeneratorDebug = 
+
+[C:/Users/pracu/source/repos/FASTWEB_NA_HRANI/WebMud/App.razor]
+build_metadata.AdditionalFiles.TargetPath = QXBwLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/pracu/source/repos/FASTWEB_NA_HRANI/WebMud/Pages/Applications/AdminSettings/AdminSettings.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQXBwbGljYXRpb25zXEFkbWluU2V0dGluZ3NcQWRtaW5TZXR0aW5ncy5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/pracu/source/repos/FASTWEB_NA_HRANI/WebMud/Pages/Applications/Chat/ChatList.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQXBwbGljYXRpb25zXENoYXRcQ2hhdExpc3QucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/pracu/source/repos/FASTWEB_NA_HRANI/WebMud/Pages/Applications/Chat/ChatRoom.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQXBwbGljYXRpb25zXENoYXRcQ2hhdFJvb20ucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/pracu/source/repos/FASTWEB_NA_HRANI/WebMud/Pages/Applications/Chat/User.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQXBwbGljYXRpb25zXENoYXRcVXNlci5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/pracu/source/repos/FASTWEB_NA_HRANI/WebMud/Pages/Applications/Chat/UserMessage.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQXBwbGljYXRpb25zXENoYXRcVXNlck1lc3NhZ2UucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/pracu/source/repos/FASTWEB_NA_HRANI/WebMud/Pages/Applications/Client/ClientDetail.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQXBwbGljYXRpb25zXENsaWVudFxDbGllbnREZXRhaWwucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/pracu/source/repos/FASTWEB_NA_HRANI/WebMud/Pages/Applications/Client/ClientPage.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQXBwbGljYXRpb25zXENsaWVudFxDbGllbnRQYWdlLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/pracu/source/repos/FASTWEB_NA_HRANI/WebMud/Pages/Applications/Email/TicketDetail.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQXBwbGljYXRpb25zXEVtYWlsXFRpY2tldERldGFpbC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/pracu/source/repos/FASTWEB_NA_HRANI/WebMud/Pages/Applications/Email/TicketsPage.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQXBwbGljYXRpb25zXEVtYWlsXFRpY2tldHNQYWdlLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/pracu/source/repos/FASTWEB_NA_HRANI/WebMud/Pages/Applications/File/FileDetail.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQXBwbGljYXRpb25zXEZpbGVcRmlsZURldGFpbC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/pracu/source/repos/FASTWEB_NA_HRANI/WebMud/Pages/Applications/File/FilePage.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQXBwbGljYXRpb25zXEZpbGVcRmlsZVBhZ2UucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/pracu/source/repos/FASTWEB_NA_HRANI/WebMud/Pages/Applications/Gallery/GalleryDetail.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQXBwbGljYXRpb25zXEdhbGxlcnlcR2FsbGVyeURldGFpbC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/pracu/source/repos/FASTWEB_NA_HRANI/WebMud/Pages/Applications/Gallery/GalleryPage.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQXBwbGljYXRpb25zXEdhbGxlcnlcR2FsbGVyeVBhZ2UucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/pracu/source/repos/FASTWEB_NA_HRANI/WebMud/Pages/Applications/Insurance/InsuranceDetail.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQXBwbGljYXRpb25zXEluc3VyYW5jZVxJbnN1cmFuY2VEZXRhaWwucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/pracu/source/repos/FASTWEB_NA_HRANI/WebMud/Pages/Applications/Insurance/InsurancePage.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQXBwbGljYXRpb25zXEluc3VyYW5jZVxJbnN1cmFuY2VQYWdlLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/pracu/source/repos/FASTWEB_NA_HRANI/WebMud/Pages/Applications/Users/UserEdit.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQXBwbGljYXRpb25zXFVzZXJzXFVzZXJFZGl0LnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/pracu/source/repos/FASTWEB_NA_HRANI/WebMud/Pages/Applications/Users/UserTab.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQXBwbGljYXRpb25zXFVzZXJzXFVzZXJUYWIucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/pracu/source/repos/FASTWEB_NA_HRANI/WebMud/Pages/Pages/Authentication/ApprovePwd.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcUGFnZXNcQXV0aGVudGljYXRpb25cQXBwcm92ZVB3ZC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/pracu/source/repos/FASTWEB_NA_HRANI/WebMud/Pages/Pages/Authentication/Forgot.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcUGFnZXNcQXV0aGVudGljYXRpb25cRm9yZ290LnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/pracu/source/repos/FASTWEB_NA_HRANI/WebMud/Pages/Pages/Authentication/Login.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcUGFnZXNcQXV0aGVudGljYXRpb25cTG9naW4ucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/pracu/source/repos/FASTWEB_NA_HRANI/WebMud/Pages/Pages/Authentication/Logout.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcUGFnZXNcQXV0aGVudGljYXRpb25cTG9nb3V0LnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/pracu/source/repos/FASTWEB_NA_HRANI/WebMud/Pages/Pages/Authentication/Register.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcUGFnZXNcQXV0aGVudGljYXRpb25cUmVnaXN0ZXIucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/pracu/source/repos/FASTWEB_NA_HRANI/WebMud/Pages/Pages/Authentication/Reset.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcUGFnZXNcQXV0aGVudGljYXRpb25cUmVzZXQucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/pracu/source/repos/FASTWEB_NA_HRANI/WebMud/Pages/Pages/Authentication/Verify.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcUGFnZXNcQXV0aGVudGljYXRpb25cVmVyaWZ5LnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/pracu/source/repos/FASTWEB_NA_HRANI/WebMud/Pages/Pages/Utility/Faq.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcUGFnZXNcVXRpbGl0eVxGYXEucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/pracu/source/repos/FASTWEB_NA_HRANI/WebMud/Pages/Pages/Utility/WasmLoading.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcUGFnZXNcVXRpbGl0eVxXYXNtTG9hZGluZy5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/pracu/source/repos/FASTWEB_NA_HRANI/WebMud/Pages/Personal/Account.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcUGVyc29uYWxcQWNjb3VudC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/pracu/source/repos/FASTWEB_NA_HRANI/WebMud/Pages/Personal/Dashboard.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcUGVyc29uYWxcRGFzaGJvYXJkLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/pracu/source/repos/FASTWEB_NA_HRANI/WebMud/Pages/Personal/Password.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcUGVyc29uYWxcUGFzc3dvcmQucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/pracu/source/repos/FASTWEB_NA_HRANI/WebMud/Pages/Personal/PersonCard.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcUGVyc29uYWxcUGVyc29uQ2FyZC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/pracu/source/repos/FASTWEB_NA_HRANI/WebMud/Public/Content/Photos.razor]
+build_metadata.AdditionalFiles.TargetPath = UHVibGljXENvbnRlbnRcUGhvdG9zLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/pracu/source/repos/FASTWEB_NA_HRANI/WebMud/Public/Content/PhotosDetail.razor]
+build_metadata.AdditionalFiles.TargetPath = UHVibGljXENvbnRlbnRcUGhvdG9zRGV0YWlsLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/pracu/source/repos/FASTWEB_NA_HRANI/WebMud/Public/Content/Terms.razor]
+build_metadata.AdditionalFiles.TargetPath = UHVibGljXENvbnRlbnRcVGVybXMucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/pracu/source/repos/FASTWEB_NA_HRANI/WebMud/Public/Content/Welcome.razor]
+build_metadata.AdditionalFiles.TargetPath = UHVibGljXENvbnRlbnRcV2VsY29tZS5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/pracu/source/repos/FASTWEB_NA_HRANI/WebMud/Public/PublicShared/Contact.razor]
+build_metadata.AdditionalFiles.TargetPath = UHVibGljXFB1YmxpY1NoYXJlZFxDb250YWN0LnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/pracu/source/repos/FASTWEB_NA_HRANI/WebMud/Public/PublicShared/Dialog.razor]
+build_metadata.AdditionalFiles.TargetPath = UHVibGljXFB1YmxpY1NoYXJlZFxEaWFsb2cucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/pracu/source/repos/FASTWEB_NA_HRANI/WebMud/Public/PublicShared/ImageDialog.razor]
+build_metadata.AdditionalFiles.TargetPath = UHVibGljXFB1YmxpY1NoYXJlZFxJbWFnZURpYWxvZy5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/pracu/source/repos/FASTWEB_NA_HRANI/WebMud/Public/PublicShared/LoadingScreen.razor]
+build_metadata.AdditionalFiles.TargetPath = UHVibGljXFB1YmxpY1NoYXJlZFxMb2FkaW5nU2NyZWVuLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/pracu/source/repos/FASTWEB_NA_HRANI/WebMud/Public/WelcomePage.razor]
+build_metadata.AdditionalFiles.TargetPath = UHVibGljXFdlbGNvbWVQYWdlLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/pracu/source/repos/FASTWEB_NA_HRANI/WebMud/Shared/ChatDialog.razor]
+build_metadata.AdditionalFiles.TargetPath = U2hhcmVkXENoYXREaWFsb2cucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/pracu/source/repos/FASTWEB_NA_HRANI/WebMud/Shared/ChatWindow.razor]
+build_metadata.AdditionalFiles.TargetPath = U2hhcmVkXENoYXRXaW5kb3cucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/pracu/source/repos/FASTWEB_NA_HRANI/WebMud/Shared/LoginLayout.razor]
+build_metadata.AdditionalFiles.TargetPath = U2hhcmVkXExvZ2luTGF5b3V0LnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/pracu/source/repos/FASTWEB_NA_HRANI/WebMud/Shared/Logo.razor]
+build_metadata.AdditionalFiles.TargetPath = U2hhcmVkXExvZ28ucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/pracu/source/repos/FASTWEB_NA_HRANI/WebMud/Shared/MainLayout.razor]
+build_metadata.AdditionalFiles.TargetPath = U2hhcmVkXE1haW5MYXlvdXQucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/pracu/source/repos/FASTWEB_NA_HRANI/WebMud/Shared/NavMenu.razor]
+build_metadata.AdditionalFiles.TargetPath = U2hhcmVkXE5hdk1lbnUucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/pracu/source/repos/FASTWEB_NA_HRANI/WebMud/Shared/ShareDialog.razor]
+build_metadata.AdditionalFiles.TargetPath = U2hhcmVkXFNoYXJlRGlhbG9nLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/pracu/source/repos/FASTWEB_NA_HRANI/WebMud/_Imports.razor]
+build_metadata.AdditionalFiles.TargetPath = X0ltcG9ydHMucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/pracu/source/repos/FASTWEB_NA_HRANI/WebMud/Pages/Error.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcRXJyb3IuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/pracu/source/repos/FASTWEB_NA_HRANI/WebMud/Pages/_Host.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcX0hvc3QuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/pracu/source/repos/FASTWEB_NA_HRANI/WebMud/Pages/_Layout.cshtml]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcX0xheW91dC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 

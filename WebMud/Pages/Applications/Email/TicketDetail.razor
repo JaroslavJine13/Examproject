@@ -1,0 +1,208 @@
+﻿@page "/application/tickets/{Id}"
+@inject ISnackbar Snackbar
+@using WebMud.Data
+@using WebMud.Models
+@inject IUsersService UsersService
+@inject ITicketsService TicketsService
+@inject NavigationManager navigationManager
+@inject AuthenticationStateProvider GetAuthenticationStateAsync
+@attribute [Authorize(Roles = "Admin, User")]
+
+@if (_user is null || _users is null || _Ticket is null)
+{
+    <MudCard>
+        <MudCardContent>
+            <MudSkeleton SkeletonType="SkeletonType.Circle" Width="50px" Height="50px" />
+            <MudSkeleton />
+            <MudSkeleton />
+            <MudSkeleton />
+            <MudSkeleton SkeletonType="SkeletonType.Circle" Width="50px" Height="50px" />
+            <MudSkeleton />
+            <MudSkeleton />
+            <MudSkeleton SkeletonType="SkeletonType.Circle" Width="50px" Height="50px" />
+            <MudSkeleton />
+            <MudSkeleton />
+        </MudCardContent>
+    </MudCard>
+
+
+}
+else
+{
+    <EditForm Model="@_Ticket" OnValidSubmit="OnValidSubmit"  OnInvalidSubmit="OnInvalidSubmit">
+        <DataAnnotationsValidator />
+
+
+
+        <MudCard>
+            <MudCardContent>
+                <div class="d-flex">
+                    @*<MudIcon Icon="@Icons.Filled.Email" Color="Color.Success" Style="margin-right: 10px; margin-top:3px"></MudIcon>
+        <MudText Typo="Typo.h6" Color="Color.Primary" Class="mb-4">@_Ticket.Email</MudText>*@
+
+
+
+                    <MudButton Class="mt-3 ml-3" Disabled="@_processing" Size="Size.Small" ButtonType="ButtonType.Submit" Variant="Variant.Filled" StartIcon="@Icons.Outlined.Save" Color="Color.Success">
+                        @if (_processing)
+                        {
+                            <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                            <MudText Class="ms-2">Working</MudText>
+                        }
+                        else
+                        {
+                            <MudText>Submit</MudText>
+                        }
+                    </MudButton>
+
+                    <MudSpacer />
+                    <MudToggleIconButton Class="mt-3 " @bind-Toggled="@_Ticket.IsCompleted"
+                                         Icon="@Icons.Outlined.GppMaybe" Color="@Color.Error" Title="Off"
+                                         ToggledIcon="@Icons.Outlined.GppGood" ToggledColor="@Color.Success" ToggledTitle="On" />
+                    <span Style="margin-right: 2px; margin-top:26px">Complete: @(_Ticket.IsCompleted? "Yes" : "No")</span>
+
+                    <MudButton Class="mt-3 ml-3" EndIcon="@Icons.Material.Outlined.DeleteForever" Color="Color.Error" Size="Size.Small" OnClick="@(() => OnDelete())" Disabled="@_processing">Delete</MudButton>
+
+                </div>
+                <br />
+                <div class="d-flex">
+                    <MudItem xs="3">
+                        <MudTextField Class="mt-3" @bind-Value="@_Ticket.CreatedDate" Label="Date" Variant="Variant.Filled" Margin="Margin.Dense" ReadOnly="true" DisableUnderLine="true" />
+                    </MudItem>
+     
+                    <MudItem xs="3">
+                        <MudTextField Class="mt-3 ml-3" @bind-Value="@_Ticket.Phone" Label="Phone" Variant="Variant.Filled" Margin="Margin.Dense" ReadOnly="true" DisableUnderLine="true" />
+                    </MudItem>
+
+                </div>
+                <div class="d-flex">
+
+                    <MudTextField @bind-Value="@_Ticket.Fname" Label="First name" Class="mt-3" Variant="Variant.Filled" Margin="Margin.Dense" ReadOnly="true" DisableUnderLine="true" />
+
+                    <MudTextField @bind-Value="@_Ticket.Sname" Class="mt-3 ml-3" Label="Last name" Variant="Variant.Filled" Margin="Margin.Dense" ReadOnly="true" DisableUnderLine="true" />
+
+                    <MudTextField @bind-Value="@_Ticket.Email" Class="mt-3 ml-3" Label="Email" Variant="Variant.Filled" Margin="Margin.Dense" ReadOnly="true" DisableUnderLine="true" />
+
+                </div>
+                <MudTextField Label="Content" Class="mt-3" @bind-Value="@_Ticket.Task" For="@(() => _Ticket.Task)" Variant="Variant.Filled" Margin="Margin.Dense" Lines="6" ReadOnly="true" DisableUnderLine="true" />
+
+                <br />
+                <MudItem xs="6">
+                    <MudSelect T="string"    @bind-Value="@_Ticket.AssignedUserID"  Label="Assign" Variant="Variant.Text" Margin="Margin.Dense" AnchorOrigin="Origin.BottomCenter" Clearable="true" MultiSelection="false" Required="true" Text="No assign" Disabled="@_processing">
+
+                        @foreach (var user in _users)
+                        {
+                            <MudSelectItem  Value="@user.Id.ToString().ToUpper()">@String.Concat(user.FName, " ", user.SName) </MudSelectItem>
+                        }
+
+                    </MudSelect>
+                </MudItem>
+
+
+                <MudTextField Label="Internal note" Class="mt-3" @bind-Value="@_Ticket.InternalNote" For="@(() => _Ticket.InternalNote)" Margin="Margin.Dense" Variant="Variant.Text" Lines="6" Disabled="@_processing" />
+
+            </MudCardContent>
+        </MudCard>
+
+
+    </EditForm>
+
+}
+
+@code {
+
+    [Parameter]
+    public string Id { get; set; }
+    [Inject] private IDialogService DialogService { get; set; }
+
+    private Users? _user { get; set; }
+    private System.Security.Claims.ClaimsPrincipal? Authuser { get; set; }
+    private bool _processing = false;
+    private WebMud.Models.Tickets _Ticket { get; set; }
+    private List<Users>? _users { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authstate = await GetAuthenticationStateAsync.GetAuthenticationStateAsync();
+        Authuser = authstate.User;
+
+        bool isValid = Guid.TryParse(Id, out Guid result);
+        if (Authuser.Identity.IsAuthenticated && isValid)
+        {
+
+            await TicketsService.TicketIsNoticed(new Guid(Id), true);
+            _Ticket = await TicketsService.GetTicket(new Guid(Id));
+            _Ticket.IsGDPR = true;
+            _user = await UsersService.GetUsers(new Guid(Authuser.Claims.First().Value));
+            _users = await UsersService.GetUsers();
+
+            //hotfix
+
+
+            StateHasChanged();
+
+        }
+        else
+        {
+            navigationManager.NavigateTo("/");
+        }
+        //
+    }
+
+    //protected override async Task OnAfterRenderAsync(bool firstRender)
+    //{
+
+
+    //}
+
+    private async Task OnDelete()
+    {
+
+        bool? result = await DialogService.ShowMessageBox(
+    "Warning",
+    "Deleting can not be undone!",
+    yesText: "Delete!", cancelText: "Cancel");
+
+        if (result == true && _Ticket.Id != Guid.Empty)
+        {
+
+            await TicketsService.DeleteTicket(_Ticket.Id);
+            navigationManager.NavigateTo("/application/tickets");
+        }
+
+    }
+
+    private async Task OnValidSubmit()
+    {
+
+        _processing = true;
+        await Task.Delay(1);
+        if (_Ticket.AssignedUserID != string.Empty)
+        {
+
+            _Ticket.AssignedDate = DateTime.Now;
+
+        }
+
+
+
+        await TicketsService.UpdateTicket(_Ticket);
+        SnackbarOn("Completed!", Defaults.Classes.Position.BottomStart, Severity.Success);
+        _processing = false;
+
+        StateHasChanged();
+    }
+    private async Task OnInvalidSubmit()
+    {
+
+        SnackbarOn("Error!", Defaults.Classes.Position.BottomStart, Severity.Error);
+
+        StateHasChanged();
+    }
+    void SnackbarOn(string message, string position, Severity sev)
+    {
+        Snackbar.Clear();
+        Snackbar.Configuration.PositionClass = position;
+        Snackbar.Configuration.SnackbarVariant = Variant.Filled;
+        Snackbar.Add(message, sev);
+    }
+}

@@ -1,0 +1,215 @@
+﻿@page "/photos"
+<PageTitle>@(AdminSettings.Title + " Gallery" ) </PageTitle>
+@attribute [AllowAnonymous]
+@inject NavigationManager Navigation
+@layout WelcomePage
+@inject IGalleryService GalleryService
+ 
+@inject IFolderService FolderService
+@using WebMud.Models
+@using WebMud.Data
+@using System.Globalization
+@using WebMud.Public.PublicShared
+@inject IDialogService DialogService
+
+
+
+<div id="divtwo">
+    <MudContainer MaxWidth="MaxWidth.Large">
+
+        <MudGrid>
+            <MudItem xs="12" Style="margin-top:70px">
+                @if (_Images != null && _FoldersView != null)
+                {
+                    <MudGrid Class="justify-center">
+                        @foreach (var item in _FoldersView.ToList())
+                        {
+                            <MudItem xs="12" sm="6" md="4">
+
+
+                                <MudCard Elevation="9" Class="rounded-lg fade">
+                                    <MudCardHeader>
+                                        <CardHeaderAvatar>
+
+                                            <MudAvatar Color="Color.Secondary">@item.Name.First().ToString().ToUpper()</MudAvatar>
+
+
+                                        </CardHeaderAvatar>
+                                        <CardHeaderContent>
+                                            <MudText Typo="Typo.h6">@item.Name</MudText>
+                                            <MudText Typo="Typo.caption" Color="Color.Default">
+                                                <MudChip Icon="@Icons.Material.Filled.DateRange" Size="Size.Small" Color="Color.Default" Class="ml-1" Style="top: -0px; ">@item.CreatedDate.Value.ToString("d")</MudChip>
+                                                @item.Note
+                                            </MudText>
+                                        </CardHeaderContent>
+                                        <CardHeaderActions>
+                                            <MudIconButton Href="@("/photos/"+item.Id.ToString())" Icon="@Icons.Material.Filled.ImageSearch" Color="Color.Default" />
+
+                                            <MudIconButton Icon="@Icons.Material.Filled.Share" Color="Color.Default" OnClick="@(() => OpenDialog(Navigation.BaseUri+"photos/"+item.Id.ToString()))" />
+
+
+
+                                        </CardHeaderActions>
+                                    </MudCardHeader>
+
+
+                                    <div class="container">
+                                        <div class="image d-flex align-center">
+                                            @if (_Images.Where(s => s.FolderLink == item.Id.ToString()).OrderBy(s => s.CreatedDate).FirstOrDefault() != null)
+                                            {
+
+                                                <MudImage Elevation="2" Src="@_Images.Where(s => s.FolderLink == item.Id.ToString()).OrderBy(s => s.CreatedDate).FirstOrDefault().Path" @onclick="@(() => NavigateTo("/photos/"+item.Id.ToString()) )" Height="168" Class="rounded-lg card" Fluid="false" ObjectPosition="ObjectPosition.Center" ObjectFit="ObjectFit.Cover" />
+
+                                            }
+                                            else
+                                            {
+                                                <MudImage Elevation="2" Src="resources/defimg.jpg" Height="168" Class="rounded-lg card" Fluid="false" @onclick="@(() => NavigateTo("/photos/"+item.Id.ToString()) )" ObjectPosition="ObjectPosition.Center" ObjectFit="ObjectFit.Contain" />
+
+                                            }
+                                        </div>
+                                        <div class="image d-flex align-center">
+                                            @if (_Images.Where(s => s.FolderLink == item.Id.ToString()).OrderBy(s => s.CreatedDate).Skip(1).FirstOrDefault() != null)
+                                            {
+                                                <MudImage Elevation="2" Src="@_Images.Where(s => s.FolderLink == item.Id.ToString()).OrderBy(s => s.CreatedDate).Skip(1).First().Path" @onclick="@(() => NavigateTo("/photos/"+item.Id.ToString()) )" Height="168" Class="rounded-lg card" Fluid="false" ObjectPosition="ObjectPosition.Center" ObjectFit="ObjectFit.Cover" />
+
+                                            }
+                                            else
+                                            {
+                                                <MudImage Elevation="2" Src="resources/defimg.jpg" Height="168" Class="rounded-lg card" Fluid="false" @onclick="@(() => NavigateTo("/photos/"+item.Id.ToString()) )" ObjectPosition="ObjectPosition.Center" ObjectFit="ObjectFit.Contain" />
+                                                @*<MudPaper Elevation="0" Style="height:168px;width:auto"></MudPaper>*@
+                                            }
+                                        </div>
+                                        <div class="image d-flex align-center">
+                                            @if (_Images.Where(s => s.FolderLink == item.Id.ToString()).OrderBy(s => s.CreatedDate).Skip(2).FirstOrDefault() != null)
+                                            {
+                                                <MudImage Elevation="2" Src="@_Images.Where(s => s.FolderLink == item.Id.ToString()).OrderBy(s => s.CreatedDate).Skip(2).First().Path" @onclick="@(() => NavigateTo("/photos/"+item.Id.ToString()) )" Height="168" Class="rounded-lg card" Fluid="false" ObjectPosition="ObjectPosition.Center" ObjectFit="ObjectFit.Cover" />
+
+                                            }
+                                            else
+                                            {
+                                                <MudImage Elevation="2" Src="resources/defimg.jpg" Height="168" Class="rounded-lg card" Fluid="false" @onclick="@(() => NavigateTo("/photos/"+item.Id.ToString()) )" ObjectPosition="ObjectPosition.Center" ObjectFit="ObjectFit.Contain" />
+                                            }
+                                        </div>
+                                        <div class="image d-flex align-center justify-center">
+                                            @if (_Images.Where(s => s.FolderLink == item.Id.ToString()).OrderBy(s => s.CreatedDate).Skip(3).FirstOrDefault() != null)
+                                            {
+                                                <MudImage Elevation="2" Src="@_Images.Where(s => s.FolderLink == item.Id.ToString()).OrderBy(s => s.CreatedDate).Skip(3).First().Path" @onclick="@(() => NavigateTo("/photos/"+item.Id.ToString()) )" Height="168" Class="rounded-lg card" Fluid="false" ObjectPosition="ObjectPosition.Center" ObjectFit="ObjectFit.Cover" />
+
+                                            }
+                                            else
+                                            {
+
+                                                <MudImage Elevation="2" Src="resources/defimg.jpg" Height="168" Class="rounded-lg card" Fluid="false" @onclick="@(() => NavigateTo("/photos/"+item.Id.ToString()) )" ObjectPosition="ObjectPosition.Center" ObjectFit="ObjectFit.Contain" />
+
+                                            }
+                                        </div>
+                                    </div>
+
+
+
+                                </MudCard>
+
+
+
+                            </MudItem>
+                        }
+                    </MudGrid>
+
+                    <div class="d-flex flex-column align-center mt-10 mb-15">
+                        <MudPagination Color="Color.Primary" Size="Size.Large" BoundaryCount="1" MiddleCount="2" Count="Convert.ToInt32(Math.Ceiling(_Folders.Count() / Convert.ToDecimal(pageSize)))" SelectedChanged="(e=>HandleChangePage(e))" Selected="pageNumber" />
+                    </div>
+                }
+            </MudItem>
+
+        </MudGrid>
+
+
+
+
+
+    </MudContainer>
+
+</div>
+<style>
+    .container {
+        display: flex;
+        flex-wrap: wrap;
+    }
+
+        .container .image {
+            width: 50%;
+        }
+
+        .container img {
+            width: calc(100% - (5px * 2));
+            margin: 5px;
+        }
+
+    body {
+        background: url(../images/bg1.png)top repeat;
+        height: 100vh;
+        width: 100%;
+        background-size: cover;
+        background-attachment: fixed;
+    }
+</style>
+
+
+
+
+}
+
+@code {
+    public List<WebMud.Models.Folder> _Folders;
+    public List<WebMud.Models.Folder> _FoldersView;
+    public List<WebMud.Models.Gallery> _Images;
+
+    protected override async Task OnInitializedAsync()
+    {
+
+
+
+
+        _Folders = await FolderService.GetFolderOnlyActive();
+        _Images = await GalleryService.GetGalleryOnlyActiveAll();
+
+        _FoldersView = _Folders.Skip((0) * pageSize).Take(pageSize).ToList();
+
+    }
+
+
+    private async Task NavigateTo(string path)
+    {
+        Navigation.NavigateTo(path, false, true);
+        StateHasChanged();
+
+    }
+
+    bool open = true;
+
+    void ToggleDrawer()
+    {
+        open = !open;
+    }
+
+    private async Task OpenDialog(string url)
+    {
+        var options = new DialogOptions { CloseOnEscapeKey = true };
+
+        var parameters = new DialogParameters { ["Url"] = url };
+
+        var dialog = DialogService.Show<ShareDialog>("Share link...", parameters);
+
+    }
+
+
+
+    private int pageSize = 6;
+    private int pageNumber = 1;
+    void HandleChangePage(int p)
+    {
+        pageNumber = p;
+        _FoldersView = _Folders.Skip((p - 1) * pageSize).Take(pageSize).ToList();
+        StateHasChanged();
+    }
+}

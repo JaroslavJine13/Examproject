@@ -1,0 +1,172 @@
+﻿
+@attribute [AllowAnonymous]
+@inject NavigationManager Navigation
+@inject ITicketsService TicketsService
+@inject IEmailServices EmailService
+@*@layout WelcomePage*@
+@using WebMud.Data
+@using WebMud.Models
+
+
+@inject ISnackbar Snackbar
+
+
+
+    <EditForm Model="@_Tickets" OnValidSubmit="OnValidSubmit">
+        <DataAnnotationsValidator />
+        <MudGrid  >
+            <MudItem xs="12" sm="12">
+                <MudCard Elevation="10">
+                    <MudCardContent>
+                        <MudText Typo="Typo.h5">Chceš pojištění? Napiš nám!!</MudText>
+                        <br />
+                        <MudTextField    Label="E-mail" HelperText="Uveďte Váš email" Variant="Variant.Outlined" @bind-Value="_Tickets.Email" RequiredError="Email je vyžadován!" Required="true" HelperTextOnFocus="true" />
+                        <div class="d-flex">
+                            <MudTextField Label="Jméno" Class="mt-3 " HelperText="Max. 50 znaků" Variant="Variant.Outlined" @bind-Value="_Tickets.Fname" For="@(() => _Tickets.Fname)" HelperTextOnFocus="true" />
+                            <MudTextField Label="Příjmení" Class="mt-3 ml-3" HelperText="Max. 50 znaků" Variant="Variant.Outlined" @bind-Value="_Tickets.Sname" For="@(() => _Tickets.Sname)" HelperTextOnFocus="true" />
+                        </div>
+                        <div class="d-flex">
+                            <MudTextField Label="Společnost" Class="mt-3" HelperText="Max. 255 znaků" Variant="Variant.Outlined" @bind-Value="_Tickets.Company" For="@(() => _Tickets.Company)" HelperTextOnFocus="true" />
+                            <MudTextField Label="Telefon" Class="mt-3 ml-3" HelperText="Vaše telefonní číslo" Variant="Variant.Outlined" @bind-Value="_Tickets.Phone" For="@(() => _Tickets.Phone)" HelperTextOnFocus="true" InputMode="InputMode.numeric" />
+                        </div>
+                        <MudTextField Label="Poptávka" HelperText="Napište Vaší žádost" Class="mt-3" @bind-Value="_Tickets.Task" For="@(() => _Tickets.Task)" Variant="Variant.Outlined" Lines="6" HelperTextOnFocus="true" />
+
+                        <MudCheckBox @bind-Checked="_Tickets.IsGDPR" Size="Size.Large" RequiredError="souhlas s GDPR je nutný pro odeslání poptávky!" ErrorText="souhlas s GDPR je nutný pro odeslání poptávky!" Required="true" Color="Color.Primary">Souhlasím se zpracováním osobních údaju dle zákona o <MudLink Href="/terms">GDPR...</MudLink></MudCheckBox>
+
+                        @if (success)
+                        {
+                            <MudText Color="Color.Success">Úspěch</MudText>
+                        }
+                        else
+                        {
+
+
+                            <MudText Color="@Color.Error">
+                                <ValidationSummary />
+                            </MudText>
+
+
+
+                        }
+                        @*</MudCardContent>
+
+
+            <MudCardContent>*@
+                        @*<MudText Typo="Typo.subtitle2">@localizer["val"]</MudText>
+            @if (success)
+            {
+                <MudText Color="Color.Success">@localizer["success"]</MudText>
+            }
+            else
+            {
+                <MudText Color="@Color.Error">
+                    <ValidationSummary />
+                </MudText>
+            }*@
+                    </MudCardContent>
+                    <br />
+                    <MudCardActions>
+                        <MudButton Disabled="@_processing" ButtonType="ButtonType.Submit" Variant="Variant.Outlined" StartIcon="@Icons.Filled.Send" Color="Color.Primary" Class="ml-auto mr-2">
+                            @if (_processing)
+                            {
+                                <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                                <MudText Class="ms-2">Pracuji</MudText>
+                            }
+                            else
+                            {
+                                <MudText>Odeslat</MudText>
+                            }
+                        </MudButton>
+                    </MudCardActions>
+                    <br />
+
+                </MudCard>
+            </MudItem>
+
+
+
+        </MudGrid>
+    </EditForm>
+
+
+<style type="text/css">
+
+
+</style>
+
+
+@code {
+
+    [Parameter] public string Text { get; set; }
+
+    bool success;
+    private Tickets _Tickets = new Tickets();
+    private bool _processing = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+
+
+        _Tickets.Task = Text;
+        //StateHasChanged();
+
+
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+
+        //StateHasChanged();
+
+    }
+
+
+
+
+    private async Task OnValidSubmit()
+    {
+        _processing = true;
+        try
+        {
+            await Task.Delay(1);
+
+
+            string message = @"
+
+<p>Attention!</p>
+<p>A new contact has arrived from a user: " + _Tickets.Email + "<br />Phone: " + _Tickets.Phone + "<br />Company: " + _Tickets.Company + "<br />His request is: " + _Tickets.Task + @"</p>";
+
+
+            await TicketsService.AddTicket(_Tickets);
+            await EmailService.SendEmailAsync(AdminSettings.EmailGeneric
+                , "New request", message);
+            success = true;
+            _processing = false;
+            _Tickets = new Tickets();
+
+
+
+            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+            Snackbar.Configuration.SnackbarVariant = Variant.Filled;
+            Snackbar.Configuration.MaxDisplayedSnackbars = 4;
+            Snackbar.Add("Úspěšně odesláno", Severity.Success);
+        }
+        catch(Exception ex)
+        {
+            
+                   Console.WriteLine(ex);
+            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+            Snackbar.Configuration.SnackbarVariant = Variant.Filled;
+            Snackbar.Configuration.MaxDisplayedSnackbars = 4;
+            Snackbar.Add("Někde se stala chyba :-(", Severity.Error);
+
+        }
+
+
+
+
+
+        //StateHasChanged();
+    }
+
+}

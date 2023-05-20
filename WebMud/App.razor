@@ -1,0 +1,27 @@
+﻿
+
+<CascadingAuthenticationState>
+    <WebMud.Public.PublicShared.LoadingScreen>
+        <Router AppAssembly="@typeof(App).Assembly" PreferExactMatches="@true">
+
+            <Found Context="routeData">
+
+                <NavigationTracker />
+
+                <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
+                    <NotAuthorized>
+                        <h1>Sorry</h1>
+                        <p>You're not authorized to reach this page.</p>
+                        <p>You may need to log in as a different user.</p>
+                    </NotAuthorized>
+                </AuthorizeRouteView>
+            </Found>
+            <NotFound>
+                <PageTitle>Not found</PageTitle>
+                <LayoutView Layout="@typeof(MainLayout)">
+                    <p role="alert">Sorry, there's nothing at this address.</p>
+                </LayoutView>
+            </NotFound>
+        </Router>
+    </WebMud.Public.PublicShared.LoadingScreen>
+</CascadingAuthenticationState> 

@@ -1,0 +1,140 @@
+﻿
+
+@page "/pages/authentication/login"
+@page "/pages/authentication/login/{ErrorMessage}"
+@layout LoginLayout
+@inject WebMud.Data.IUsersService UsersService
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
+@attribute [AllowAnonymous]
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@using WebMud.Data
+@using Microsoft.AspNetCore.Components.Authorization
+@using System.Security.Claims
+@using Microsoft.AspNetCore.Authentication.Cookies
+@using System.Security.Claims
+@using WebMud.Models
+
+@if (ErrorMessage != null)
+{
+    SnackbarOn(ErrorMessage);
+}
+<AuthorizeView>
+    <NotAuthorized>
+        <MudText Typo="Typo.h4" GutterBottom="true">Sign In</MudText>
+
+        <MudText>Don't have an account? <MudLink Href="/pages/authentication/register">Sign Up</MudLink></MudText>
+
+        <form Model="@model" action="cookie" method="post" >
+            <MudTextField T="string" @bind-Value="model.Email" Label="E-mail" Variant="Variant.Outlined" Class="my-6" Required="true" name="Username" Disabled="_processing"></MudTextField>
+
+            <MudTextField @bind-Value="model.Password" Label="Password" Variant="Variant.Outlined" InputType="@PasswordInput" Adornment="Adornment.End" AdornmentIcon="@PasswordInputIcon" OnAdornmentClick="TogglePasswordVisibility" Required="true" name="password" Disabled="_processing" />
+
+            <div Class="d-flex justify-space-between align-center">
+                <MudCheckBox T="bool" name="IsRemembered" Label="Remember me?" Color="Color.Primary" Class="ml-n1 my-3" Disabled="_processing"></MudCheckBox>
+                <MudLink Href="/pages/authentication/forgot-password">Forgot pwd?</MudLink>
+            </div>
+
+            <MudButton Disabled="_processing" OnClick="Wait" ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large" FullWidth="true" type="submit">
+               
+
+
+                @if (_processing)
+                {
+                    <MudProgressCircular Class="ms-n1" Size="Size.Small" Indeterminate="true" />
+                    <MudText Class="ms-2">Working</MudText>
+                }
+                else
+                {
+            <MudText> Sign In</MudText>
+                }
+            </MudButton>
+
+        </form>
+
+    </NotAuthorized>
+    <Authorized>
+        <h3 Class="mt-5">Hello  @(context.User.Identity.Name), you can continue         <MudLink Href="/personal/dashboard">here...</MudLink></h3>
+    </Authorized>
+</AuthorizeView>
+@code {
+
+    [Parameter] public string ErrorMessage { get; set; }
+
+    private bool _processing = false;
+    Users model = new Users();
+    private List<Users> Users;
+
+    bool PasswordVisibility;
+    InputType PasswordInput = InputType.Password;
+    string PasswordInputIcon = Icons.Material.Filled.VisibilityOff;
+    bool Isremembered { get; set; }
+
+    private System.Security.Claims.ClaimsPrincipal Authuser { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authstate = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        Users = await UsersService.GetUsers();
+        Authuser = authstate.User;
+
+    }
+
+    private async void OnValidSubmit()
+    {
+
+
+        if (Users.Any(a => a.Email.Equals(model.Email) && a.Password.Equals(model.Password)))
+        {
+
+
+            //Navigation.NavigateTo("/personal/dashboard");
+
+
+        }
+        else
+        {
+            Snackbar.Clear();
+            Snackbar.Configuration.SnackbarVariant = Variant.Outlined;
+            Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomStart;
+            Snackbar.Add("Email or password is wrong!", Severity.Error);
+
+
+        }
+
+    }
+
+    private async Task Wait()
+    {
+        _processing = true;
+ 
+
+    }
+
+
+    void TogglePasswordVisibility()
+    {
+        if (PasswordVisibility)
+        {
+            PasswordVisibility = false;
+            PasswordInputIcon = Icons.Material.Filled.VisibilityOff;
+            PasswordInput = InputType.Password;
+        }
+        else
+        {
+            PasswordVisibility = true;
+            PasswordInputIcon = Icons.Material.Filled.Visibility;
+            PasswordInput = InputType.Text;
+        }
+    }
+
+    void SnackbarOn(string error)
+    {
+        Snackbar.Clear();
+        Snackbar.Configuration.SnackbarVariant = Variant.Outlined;
+        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomStart;
+        Snackbar.Add(error, Severity.Error);
+
+    }
+
+}

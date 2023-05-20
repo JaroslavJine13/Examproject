@@ -1,0 +1,39 @@
+﻿@attribute [Authorize(Roles = "Admin, User")]
+@using WebMud.Data
+@using WebMud.Models
+<div class="d-flex flex-row my-2 " Style="word-wrap: break-word; " >
+    <div class="mr-2 ">
+        @if (!Mine)
+        {
+            @if (!String.IsNullOrEmpty(ChatUser.AvatarPath))
+            {
+                <MudAvatar Image="@ChatUser.AvatarPath" />
+            }
+            else
+            {
+                <MudAvatar Color="Color.Dark" Style="height:45px; width:45px;">@ChatUser.FName.ToUpper().FirstOrDefault() @ChatUser.SName.ToUpper().FirstOrDefault()</MudAvatar>
+            }
+
+        }
+
+    </div>
+    <div>
+        @if (!Mine)
+        {
+            <MudText Typo="Typo.body1"><b>@ChatUser.FName @ChatUser.SName.ToUpper().FirstOrDefault()</b></MudText>
+        }
+            <MudPaper Class="@Theme">
+                <MudText Style="word-wrap: break-word; " Typo="Typo.body2">@Message</MudText>
+            </MudPaper>
+        </div>
+</div>
+
+
+@code {
+
+    [Parameter] public string UserName { get; set; }
+    [Parameter] public string Message { get; set; }
+    [Parameter] public Users ChatUser { get; set; }
+    [Parameter] public string Theme { get; set; }
+    [Parameter] public bool Mine { get; set; }
+}
